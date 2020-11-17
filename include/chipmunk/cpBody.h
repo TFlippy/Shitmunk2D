@@ -186,4 +186,6 @@ typedef void (*cpBodyArbiterIteratorFunc)(cpBody *body, cpArbiter *arbiter, void
 /// Call @c func once for each arbiter that is currently active on the body.
 CP_EXPORT void cpBodyEachArbiter(cpBody *body, cpBodyArbiterIteratorFunc func, void *data);
 
+CP_EXPORT void cpBodyAccumulateMassFromShapes(cpBody* body);
+
 ///@}
