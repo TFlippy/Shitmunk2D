@@ -74,7 +74,7 @@ void cpBodyAddShape(cpBody *body, cpShape *shape);
 void cpBodyRemoveShape(cpBody *body, cpShape *shape);
 
 //void cpBodyAccumulateMassForShape(cpBody *body, cpShape *shape);
-void cpBodyAccumulateMassFromShapes(cpBody *body);
+//void cpBodyAccumulateMassFromShapes(cpBody *body);
 
 void cpBodyRemoveConstraint(cpBody *body, cpConstraint *constraint);
 
