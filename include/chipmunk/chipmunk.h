@@ -24,6 +24,7 @@
 
 #include <stdlib.h>
 #include <math.h>
+#include <atomic>
 
 #ifndef alloca
 	#ifdef _WIN32

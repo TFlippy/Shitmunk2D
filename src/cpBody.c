@@ -203,8 +203,7 @@ cpBodySetType(cpBody *body, cpBodyType type)
 
 
 // Should *only* be called when shapes with mass info are modified, added or removed.
-void
-cpBodyAccumulateMassFromShapes(cpBody *body)
+void cpBodyAccumulateMassFromShapes(cpBody *body)
 {
 	if(body == NULL || cpBodyGetType(body) != CP_BODY_TYPE_DYNAMIC) return;
 	

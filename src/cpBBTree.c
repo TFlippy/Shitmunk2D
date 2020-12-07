@@ -1,15 +1,15 @@
 /* Copyright (c) 2013 Scott Lembcke and Howling Moon Software
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,38 +24,45 @@
 
 #include "chipmunk/chipmunk_private.h"
 
-static inline cpSpatialIndexClass *Klass(void);
+static inline cpSpatialIndexClass* Klass(void);
 
 typedef struct Node Node;
 typedef struct Pair Pair;
 
-struct cpBBTree {
+struct cpBBTree
+{
 	cpSpatialIndex spatialIndex;
 	cpBBTreeVelocityFunc velocityFunc;
-	
-	cpHashSet *leaves;
-	Node *root;
-	
-	Node *pooledNodes;
-	Pair *pooledPairs;
-	cpArray *allocatedBuffers;
-	
+
+	cpHashSet* leaves;
+	Node* root;
+
+	Node* pooledNodes;
+	Pair* pooledPairs;
+	cpArray* allocatedBuffers;
+
 	cpTimestamp stamp;
 };
 
-struct Node {
-	void *obj;
+struct Node
+{
+	void* obj;
 	cpBB bb;
-	Node *parent;
-	
-	union {
+	Node* parent;
+
+	union
+	{
 		// Internal nodes
-		struct { Node *a, *b; } children;
-		
+		struct
+		{
+			Node* a, * b;
+		} children;
+
 		// Leaves
-		struct {
+		struct
+		{
 			cpTimestamp stamp;
-			Pair *pairs;
+			Pair* pairs;
 		} leaf;
 	} node;
 };
@@ -66,13 +73,15 @@ struct Node {
 #define STAMP node.leaf.stamp
 #define PAIRS node.leaf.pairs
 
-typedef struct Thread {
-	Pair *prev;
-	Node *leaf;
-	Pair *next;
+typedef struct Thread
+{
+	Pair* prev;
+	Node* leaf;
+	Pair* next;
 } Thread;
 
-struct Pair {
+struct Pair
+{
 	Thread a, b;
 	cpCollisionID id;
 };
@@ -80,48 +89,55 @@ struct Pair {
 //MARK: Misc Functions
 
 static inline cpBB
-GetBB(cpBBTree *tree, void *obj)
+GetBB(cpBBTree* tree, void* obj)
 {
 	cpBB bb = tree->spatialIndex.bbfunc(obj);
-	
+
 	cpBBTreeVelocityFunc velocityFunc = tree->velocityFunc;
-	if(velocityFunc){
+	if (velocityFunc)
+	{
 		cpFloat coef = 0.1f;
-		cpFloat x = (bb.r - bb.l)*coef;
-		cpFloat y = (bb.t - bb.b)*coef;
-		
+		cpFloat x = (bb.r - bb.l) * coef;
+		cpFloat y = (bb.t - bb.b) * coef;
+
 		cpVect v = cpvmult(velocityFunc(obj), 0.1f);
 		return cpBBNew(bb.l + cpfmin(-x, v.x), bb.b + cpfmin(-y, v.y), bb.r + cpfmax(x, v.x), bb.t + cpfmax(y, v.y));
-	} else {
+	}
+	else
+	{
 		return bb;
 	}
 }
 
-static inline cpBBTree *
-GetTree(cpSpatialIndex *index)
+static inline cpBBTree*
+GetTree(cpSpatialIndex* index)
 {
-	return (index && index->klass == Klass() ? (cpBBTree *)index : NULL);
+	return (index && index->klass == Klass() ? (cpBBTree*)index : NULL);
 }
 
-static inline Node *
-GetRootIfTree(cpSpatialIndex *index){
-	return (index && index->klass == Klass() ? ((cpBBTree *)index)->root : NULL);
+static inline Node*
+GetRootIfTree(cpSpatialIndex* index)
+{
+	return (index && index->klass == Klass() ? ((cpBBTree*)index)->root : NULL);
 }
 
-static inline cpBBTree *
-GetMasterTree(cpBBTree *tree)
+static inline cpBBTree*
+GetMasterTree(cpBBTree* tree)
 {
-	cpBBTree *dynamicTree = GetTree(tree->spatialIndex.dynamicIndex);
+	cpBBTree* dynamicTree = GetTree(tree->spatialIndex.dynamicIndex);
 	return (dynamicTree ? dynamicTree : tree);
 }
 
 static inline void
-IncrementStamp(cpBBTree *tree)
+IncrementStamp(cpBBTree* tree)
 {
-	cpBBTree *dynamicTree = GetTree(tree->spatialIndex.dynamicIndex);
-	if(dynamicTree){
+	cpBBTree* dynamicTree = GetTree(tree->spatialIndex.dynamicIndex);
+	if (dynamicTree)
+	{
 		dynamicTree->stamp++;
-	} else {
+	}
+	else
+	{
 		tree->stamp++;
 	}
 }
@@ -129,38 +145,41 @@ IncrementStamp(cpBBTree *tree)
 //MARK: Pair/Thread Functions
 
 static void
-PairRecycle(cpBBTree *tree, Pair *pair)
+PairRecycle(cpBBTree* tree, Pair* pair)
 {
 	// Share the pool of the master tree.
 	// TODO: would be lovely to move the pairs stuff into an external data structure.
 	tree = GetMasterTree(tree);
-	
+
 	pair->a.next = tree->pooledPairs;
 	tree->pooledPairs = pair;
 }
 
-static Pair *
-PairFromPool(cpBBTree *tree)
+static Pair*
+PairFromPool(cpBBTree* tree)
 {
 	// Share the pool of the master tree.
 	// TODO: would be lovely to move the pairs stuff into an external data structure.
 	tree = GetMasterTree(tree);
-	
-	Pair *pair = tree->pooledPairs;
-	
-	if(pair){
+
+	Pair* pair = tree->pooledPairs;
+
+	if (pair)
+	{
 		tree->pooledPairs = pair->a.next;
 		return pair;
-	} else {
+	}
+	else
+	{
 		// Pool is exhausted, make more
-		int count = CP_BUFFER_BYTES/sizeof(Pair);
+		int count = CP_BUFFER_BYTES / sizeof(Pair);
 		cpAssertHard(count, "Internal Error: Buffer size is too small.");
-		
-		Pair *buffer = (Pair *)cpcalloc(1, CP_BUFFER_BYTES);
+
+		Pair* buffer = (Pair*)cpcalloc(1, CP_BUFFER_BYTES);
 		cpArrayPush(tree->allocatedBuffers, buffer);
-		
+
 		// push all but the first one, return the first instead
-		for(int i=1; i<count; i++) PairRecycle(tree, buffer + i);
+		for (int i = 1; i < count; i++) PairRecycle(tree, buffer + i);
 		return buffer;
 	}
 }
@@ -168,34 +187,42 @@ PairFromPool(cpBBTree *tree)
 static inline void
 ThreadUnlink(Thread thread)
 {
-	Pair *next = thread.next;
-	Pair *prev = thread.prev;
-	
-	if(next){
-		if(next->a.leaf == thread.leaf) next->a.prev = prev; else next->b.prev = prev;
+	Pair* next = thread.next;
+	Pair* prev = thread.prev;
+
+	if (next)
+	{
+		if (next->a.leaf == thread.leaf) next->a.prev = prev; else next->b.prev = prev;
 	}
-	
-	if(prev){
-		if(prev->a.leaf == thread.leaf) prev->a.next = next; else prev->b.next = next;
-	} else {
+
+	if (prev)
+	{
+		if (prev->a.leaf == thread.leaf) prev->a.next = next; else prev->b.next = next;
+	}
+	else
+	{
 		thread.leaf->PAIRS = next;
 	}
 }
 
 static void
-PairsClear(Node *leaf, cpBBTree *tree)
+PairsClear(Node* leaf, cpBBTree* tree)
 {
-	Pair *pair = leaf->PAIRS;
+	Pair* pair = leaf->PAIRS;
 	leaf->PAIRS = NULL;
-	
-	while(pair){
-		if(pair->a.leaf == leaf){
-			Pair *next = pair->a.next;
+
+	while (pair)
+	{
+		if (pair->a.leaf == leaf)
+		{
+			Pair* next = pair->a.next;
 			ThreadUnlink(pair->b);
 			PairRecycle(tree, pair);
 			pair = next;
-		} else {
-			Pair *next = pair->b.next;
+		}
+		else
+		{
+			Pair* next = pair->b.next;
 			ThreadUnlink(pair->a);
 			PairRecycle(tree, pair);
 			pair = next;
@@ -204,21 +231,23 @@ PairsClear(Node *leaf, cpBBTree *tree)
 }
 
 static void
-PairInsert(Node *a, Node *b, cpBBTree *tree)
+PairInsert(Node* a, Node* b, cpBBTree* tree)
 {
-	Pair *nextA = a->PAIRS, *nextB = b->PAIRS;
-	Pair *pair = PairFromPool(tree);
+	Pair* nextA = a->PAIRS, * nextB = b->PAIRS;
+	Pair* pair = PairFromPool(tree);
 	Pair temp = {{NULL, a, nextA},{NULL, b, nextB}, 0};
-	
+
 	a->PAIRS = b->PAIRS = pair;
 	*pair = temp;
-	
-	if(nextA){
-		if(nextA->a.leaf == a) nextA->a.prev = pair; else nextA->b.prev = pair;
+
+	if (nextA)
+	{
+		if (nextA->a.leaf == a) nextA->a.prev = pair; else nextA->b.prev = pair;
 	}
-	
-	if(nextB){
-		if(nextB->a.leaf == b) nextB->a.prev = pair; else nextB->b.prev = pair;
+
+	if (nextB)
+	{
+		if (nextB->a.leaf == b) nextB->a.prev = pair; else nextB->b.prev = pair;
 	}
 }
 
@@ -226,90 +255,97 @@ PairInsert(Node *a, Node *b, cpBBTree *tree)
 //MARK: Node Functions
 
 static void
-NodeRecycle(cpBBTree *tree, Node *node)
+NodeRecycle(cpBBTree* tree, Node* node)
 {
 	node->parent = tree->pooledNodes;
 	tree->pooledNodes = node;
 }
 
-static Node *
-NodeFromPool(cpBBTree *tree)
+static Node*
+NodeFromPool(cpBBTree* tree)
 {
-	Node *node = tree->pooledNodes;
-	
-	if(node){
+	Node* node = tree->pooledNodes;
+
+	if (node)
+	{
 		tree->pooledNodes = node->parent;
 		return node;
-	} else {
+	}
+	else
+	{
 		// Pool is exhausted, make more
-		int count = CP_BUFFER_BYTES/sizeof(Node);
+		int count = CP_BUFFER_BYTES / sizeof(Node);
 		cpAssertHard(count, "Internal Error: Buffer size is too small.");
-		
-		Node *buffer = (Node *)cpcalloc(1, CP_BUFFER_BYTES);
+
+		Node* buffer = (Node*)cpcalloc(1, CP_BUFFER_BYTES);
 		cpArrayPush(tree->allocatedBuffers, buffer);
-		
+
 		// push all but the first one, return the first instead
-		for(int i=1; i<count; i++) NodeRecycle(tree, buffer + i);
+		for (int i = 1; i < count; i++) NodeRecycle(tree, buffer + i);
 		return buffer;
 	}
 }
 
 static inline void
-NodeSetA(Node *node, Node *value)
+NodeSetA(Node* node, Node* value)
 {
 	node->A = value;
 	value->parent = node;
 }
 
 static inline void
-NodeSetB(Node *node, Node *value)
+NodeSetB(Node* node, Node* value)
 {
 	node->B = value;
 	value->parent = node;
 }
 
-static Node *
-NodeNew(cpBBTree *tree, Node *a, Node *b)
+static Node*
+NodeNew(cpBBTree* tree, Node* a, Node* b)
 {
-	Node *node = NodeFromPool(tree);
-	
+	Node* node = NodeFromPool(tree);
+
 	node->obj = NULL;
 	node->bb = cpBBMerge(a->bb, b->bb);
 	node->parent = NULL;
-	
+
 	NodeSetA(node, a);
 	NodeSetB(node, b);
-	
+
 	return node;
 }
 
 static inline cpBool
-NodeIsLeaf(Node *node)
+NodeIsLeaf(Node* node)
 {
 	return (node->obj != NULL);
 }
 
-static inline Node *
-NodeOther(Node *node, Node *child)
+static inline Node*
+NodeOther(Node* node, Node* child)
 {
 	return (node->A == child ? node->B : node->A);
 }
 
 static inline void
-NodeReplaceChild(Node *parent, Node *child, Node *value, cpBBTree *tree)
+NodeReplaceChild(Node* parent, Node* child, Node* value, cpBBTree* tree)
 {
 	cpAssertSoft(!NodeIsLeaf(parent), "Internal Error: Cannot replace child of a leaf.");
 	cpAssertSoft(child == parent->A || child == parent->B, "Internal Error: Node is not a child of parent.");
-	
-	if(parent->A == child){
+
+	if (parent->A == child)
+	{
 		NodeRecycle(tree, parent->A);
 		NodeSetA(parent, value);
-	} else {
+	}
+	else
+	{
 		NodeRecycle(tree, parent->B);
 		NodeSetB(parent, value);
 	}
-	
-	for(Node *node=parent; node; node = node->parent){
+
+	for (Node* node = parent; node; node = node->parent)
+	{
 		node->bb = cpBBMerge(node->A->bb, node->B->bb);
 	}
 }
@@ -322,40 +358,53 @@ cpBBProximity(cpBB a, cpBB b)
 	return cpfabs(a.l + a.r - b.l - b.r) + cpfabs(a.b + a.t - b.b - b.t);
 }
 
-static Node *
-SubtreeInsert(Node *subtree, Node *leaf, cpBBTree *tree)
+static Node*
+SubtreeInsert(Node* subtree, Node* leaf, cpBBTree* tree)
 {
-	if(subtree == NULL){
+	if (subtree == NULL)
+	{
 		return leaf;
-	} else if(NodeIsLeaf(subtree)){
+	}
+	else if (NodeIsLeaf(subtree))
+	{
 		return NodeNew(tree, leaf, subtree);
-	} else {
+	}
+	else
+	{
 		cpFloat cost_a = cpBBArea(subtree->B->bb) + cpBBMergedArea(subtree->A->bb, leaf->bb);
 		cpFloat cost_b = cpBBArea(subtree->A->bb) + cpBBMergedArea(subtree->B->bb, leaf->bb);
-		
-		if(cost_a == cost_b){
+
+		if (cost_a == cost_b)
+		{
 			cost_a = cpBBProximity(subtree->A->bb, leaf->bb);
 			cost_b = cpBBProximity(subtree->B->bb, leaf->bb);
 		}
-		
-		if(cost_b < cost_a){
+
+		if (cost_b < cost_a)
+		{
 			NodeSetB(subtree, SubtreeInsert(subtree->B, leaf, tree));
-		} else {
+		}
+		else
+		{
 			NodeSetA(subtree, SubtreeInsert(subtree->A, leaf, tree));
 		}
-		
+
 		subtree->bb = cpBBMerge(subtree->bb, leaf->bb);
 		return subtree;
 	}
 }
 
 static void
-SubtreeQuery(Node *subtree, void *obj, cpBB bb, cpSpatialIndexQueryFunc func, void *data)
+SubtreeQuery(Node* subtree, void* obj, cpBB bb, cpSpatialIndexQueryFunc func, void* data)
 {
-	if(cpBBIntersects(subtree->bb, bb)){
-		if(NodeIsLeaf(subtree)){
+	if (cpBBIntersects(subtree->bb, bb))
+	{
+		if (NodeIsLeaf(subtree))
+		{
 			func(obj, subtree->obj, 0, data);
-		} else {
+		}
+		else
+		{
 			SubtreeQuery(subtree->A, obj, bb, func, data);
 			SubtreeQuery(subtree->B, obj, bb, func, data);
 		}
@@ -364,49 +413,62 @@ SubtreeQuery(Node *subtree, void *obj, cpBB bb, cpSpatialIndexQueryFunc func, vo
 
 
 static cpFloat
-SubtreeSegmentQuery(Node *subtree, void *obj, cpVect a, cpVect b, cpFloat t_exit, cpSpatialIndexSegmentQueryFunc func, void *data)
+SubtreeSegmentQuery(Node* subtree, void* obj, cpVect a, cpVect b, cpFloat t_exit, cpSpatialIndexSegmentQueryFunc func, void* data)
 {
-	if(NodeIsLeaf(subtree)){
+	if (NodeIsLeaf(subtree))
+	{
 		return func(obj, subtree->obj, data);
-	} else {
+	}
+	else
+	{
 		cpFloat t_a = cpBBSegmentQuery(subtree->A->bb, a, b);
 		cpFloat t_b = cpBBSegmentQuery(subtree->B->bb, a, b);
-		
-		if(t_a < t_b){
-			if(t_a < t_exit) t_exit = cpfmin(t_exit, SubtreeSegmentQuery(subtree->A, obj, a, b, t_exit, func, data));
-			if(t_b < t_exit) t_exit = cpfmin(t_exit, SubtreeSegmentQuery(subtree->B, obj, a, b, t_exit, func, data));
-		} else {
-			if(t_b < t_exit) t_exit = cpfmin(t_exit, SubtreeSegmentQuery(subtree->B, obj, a, b, t_exit, func, data));
-			if(t_a < t_exit) t_exit = cpfmin(t_exit, SubtreeSegmentQuery(subtree->A, obj, a, b, t_exit, func, data));
+
+		if (t_a < t_b)
+		{
+			if (t_a < t_exit) t_exit = cpfmin(t_exit, SubtreeSegmentQuery(subtree->A, obj, a, b, t_exit, func, data));
+			if (t_b < t_exit) t_exit = cpfmin(t_exit, SubtreeSegmentQuery(subtree->B, obj, a, b, t_exit, func, data));
 		}
-		
+		else
+		{
+			if (t_b < t_exit) t_exit = cpfmin(t_exit, SubtreeSegmentQuery(subtree->B, obj, a, b, t_exit, func, data));
+			if (t_a < t_exit) t_exit = cpfmin(t_exit, SubtreeSegmentQuery(subtree->A, obj, a, b, t_exit, func, data));
+		}
+
 		return t_exit;
 	}
 }
 
 static void
-SubtreeRecycle(cpBBTree *tree, Node *node)
+SubtreeRecycle(cpBBTree* tree, Node* node)
 {
-	if(!NodeIsLeaf(node)){
+	if (!NodeIsLeaf(node))
+	{
 		SubtreeRecycle(tree, node->A);
 		SubtreeRecycle(tree, node->B);
 		NodeRecycle(tree, node);
 	}
 }
 
-static inline Node *
-SubtreeRemove(Node *subtree, Node *leaf, cpBBTree *tree)
+static inline Node*
+SubtreeRemove(Node* subtree, Node* leaf, cpBBTree* tree)
 {
-	if(leaf == subtree){
+	if (leaf == subtree)
+	{
 		return NULL;
-	} else {
-		Node *parent = leaf->parent;
-		if(parent == subtree){
-			Node *other = NodeOther(subtree, leaf);
+	}
+	else
+	{
+		Node* parent = leaf->parent;
+		if (parent == subtree)
+		{
+			Node* other = NodeOther(subtree, leaf);
 			other->parent = subtree->parent;
 			NodeRecycle(tree, subtree);
 			return other;
-		} else {
+		}
+		else
+		{
 			NodeReplaceChild(parent->parent, parent, NodeOther(parent, leaf), tree);
 			return subtree;
 		}
@@ -415,25 +477,33 @@ SubtreeRemove(Node *subtree, Node *leaf, cpBBTree *tree)
 
 //MARK: Marking Functions
 
-typedef struct MarkContext {
-	cpBBTree *tree;
-	Node *staticRoot;
+typedef struct MarkContext
+{
+	cpBBTree* tree;
+	Node* staticRoot;
 	cpSpatialIndexQueryFunc func;
-	void *data;
+	void* data;
 } MarkContext;
 
 static void
-MarkLeafQuery(Node *subtree, Node *leaf, cpBool left, MarkContext *context)
+MarkLeafQuery(Node* subtree, Node* leaf, cpBool left, MarkContext* context)
 {
-	if(cpBBIntersects(leaf->bb, subtree->bb)){
-		if(NodeIsLeaf(subtree)){
-			if(left){
+	if (cpBBIntersects(leaf->bb, subtree->bb))
+	{
+		if (NodeIsLeaf(subtree))
+		{
+			if (left)
+			{
 				PairInsert(leaf, subtree, context->tree);
-			} else {
-				if(subtree->STAMP < leaf->STAMP) PairInsert(subtree, leaf, context->tree);
+			}
+			else
+			{
+				if (subtree->STAMP < leaf->STAMP) PairInsert(subtree, leaf, context->tree);
 				context->func(leaf->obj, subtree->obj, 0, context->data);
 			}
-		} else {
+		}
+		else
+		{
 			MarkLeafQuery(subtree->A, leaf, left, context);
 			MarkLeafQuery(subtree->B, leaf, left, context);
 		}
@@ -441,27 +511,38 @@ MarkLeafQuery(Node *subtree, Node *leaf, cpBool left, MarkContext *context)
 }
 
 static void
-MarkLeaf(Node *leaf, MarkContext *context)
+MarkLeaf(Node* leaf, MarkContext* context)
 {
-	cpBBTree *tree = context->tree;
-	if(leaf->STAMP == GetMasterTree(tree)->stamp){
-		Node *staticRoot = context->staticRoot;
-		if(staticRoot) MarkLeafQuery(staticRoot, leaf, cpFalse, context);
-		
-		for(Node *node = leaf; node->parent; node = node->parent){
-			if(node == node->parent->A){
+	cpBBTree* tree = context->tree;
+	if (leaf->STAMP == GetMasterTree(tree)->stamp)
+	{
+		Node* staticRoot = context->staticRoot;
+		if (staticRoot) MarkLeafQuery(staticRoot, leaf, cpFalse, context);
+
+		for (Node* node = leaf; node->parent; node = node->parent)
+		{
+			if (node == node->parent->A)
+			{
 				MarkLeafQuery(node->parent->B, leaf, cpTrue, context);
-			} else {
+			}
+			else
+			{
 				MarkLeafQuery(node->parent->A, leaf, cpFalse, context);
 			}
 		}
-	} else {
-		Pair *pair = leaf->PAIRS;
-		while(pair){
-			if(leaf == pair->b.leaf){
+	}
+	else
+	{
+		Pair* pair = leaf->PAIRS;
+		while (pair)
+		{
+			if (leaf == pair->b.leaf)
+			{
 				pair->id = context->func(pair->a.leaf->obj, leaf->obj, pair->id, context->data);
 				pair = pair->b.next;
-			} else {
+			}
+			else
+			{
 				pair = pair->a.next;
 			}
 		}
@@ -469,11 +550,14 @@ MarkLeaf(Node *leaf, MarkContext *context)
 }
 
 static void
-MarkSubtree(Node *subtree, MarkContext *context)
+MarkSubtree(Node* subtree, MarkContext* context)
 {
-	if(NodeIsLeaf(subtree)){
+	if (NodeIsLeaf(subtree))
+	{
 		MarkLeaf(subtree, context);
-	} else {
+	}
+	else
+	{
 		MarkSubtree(subtree->A, context);
 		MarkSubtree(subtree->B, context); // TODO: Force TCO here?
 	}
@@ -481,56 +565,66 @@ MarkSubtree(Node *subtree, MarkContext *context)
 
 //MARK: Leaf Functions
 
-static Node *
-LeafNew(cpBBTree *tree, void *obj, cpBB bb)
+static Node*
+LeafNew(cpBBTree* tree, void* obj, cpBB bb)
 {
-	Node *node = NodeFromPool(tree);
+	Node* node = NodeFromPool(tree);
 	node->obj = obj;
 	node->bb = GetBB(tree, obj);
-	
+
 	node->parent = NULL;
 	node->STAMP = 0;
 	node->PAIRS = NULL;
-	
+
 	return node;
 }
 
 static cpBool
-LeafUpdate(Node *leaf, cpBBTree *tree)
+LeafUpdate(Node* leaf, cpBBTree* tree)
 {
-	Node *root = tree->root;
+	Node* root = tree->root;
 	cpBB bb = tree->spatialIndex.bbfunc(leaf->obj);
-	
-	if(!cpBBContainsBB(leaf->bb, bb)){
+
+	if (!cpBBContainsBB(leaf->bb, bb))
+	{
 		leaf->bb = GetBB(tree, leaf->obj);
-		
+
 		root = SubtreeRemove(root, leaf, tree);
 		tree->root = SubtreeInsert(root, leaf, tree);
-		
+
 		PairsClear(leaf, tree);
 		leaf->STAMP = GetMasterTree(tree)->stamp;
-		
+
 		return cpTrue;
-	} else {
+	}
+	else
+	{
 		return cpFalse;
 	}
 }
 
-static cpCollisionID VoidQueryFunc(void *obj1, void *obj2, cpCollisionID id, void *data){return id;}
+static cpCollisionID VoidQueryFunc(void* obj1, void* obj2, cpCollisionID id, void* data)
+{
+	return id;
+}
 
 static void
-LeafAddPairs(Node *leaf, cpBBTree *tree)
+LeafAddPairs(Node* leaf, cpBBTree* tree)
 {
-	cpSpatialIndex *dynamicIndex = tree->spatialIndex.dynamicIndex;
-	if(dynamicIndex){
-		Node *dynamicRoot = GetRootIfTree(dynamicIndex);
-		if(dynamicRoot){
-			cpBBTree *dynamicTree = GetTree(dynamicIndex);
+	cpSpatialIndex* dynamicIndex = tree->spatialIndex.dynamicIndex;
+	if (dynamicIndex)
+	{
+		Node* dynamicRoot = GetRootIfTree(dynamicIndex);
+		if (dynamicRoot)
+		{
+			cpBBTree* dynamicTree = GetTree(dynamicIndex);
 			MarkContext context = {dynamicTree, NULL, NULL, NULL};
 			MarkLeafQuery(dynamicRoot, leaf, cpTrue, &context);
 		}
-	} else {
-		Node *staticRoot = GetRootIfTree(tree->spatialIndex.staticIndex);
+	}
+	else
+	{
+		Node* staticRoot = GetRootIfTree(tree->spatialIndex.staticIndex);
 		MarkContext context = {tree, staticRoot, VoidQueryFunc, NULL};
 		MarkLeaf(leaf, &context);
 	}
@@ -538,133 +632,138 @@ LeafAddPairs(Node *leaf, cpBBTree *tree)
 
 //MARK: Memory Management Functions
 
-cpBBTree *
+cpBBTree*
 cpBBTreeAlloc(void)
 {
-	return (cpBBTree *)cpcalloc(1, sizeof(cpBBTree));
+	return (cpBBTree*)cpcalloc(1, sizeof(cpBBTree));
 }
 
 static int
-leafSetEql(void *obj, Node *node)
+leafSetEql(void* obj, Node* node)
 {
 	return (obj == node->obj);
 }
 
-static void *
-leafSetTrans(void *obj, cpBBTree *tree)
+static void*
+leafSetTrans(void* obj, cpBBTree* tree)
 {
 	return LeafNew(tree, obj, tree->spatialIndex.bbfunc(obj));
 }
 
-cpSpatialIndex *
-cpBBTreeInit(cpBBTree *tree, cpSpatialIndexBBFunc bbfunc, cpSpatialIndex *staticIndex)
+cpSpatialIndex*
+cpBBTreeInit(cpBBTree* tree, cpSpatialIndexBBFunc bbfunc, cpSpatialIndex* staticIndex)
 {
-	cpSpatialIndexInit((cpSpatialIndex *)tree, Klass(), bbfunc, staticIndex);
-	
+	cpSpatialIndexInit((cpSpatialIndex*)tree, Klass(), bbfunc, staticIndex);
+
 	tree->velocityFunc = NULL;
-	
+
 	tree->leaves = cpHashSetNew(0, (cpHashSetEqlFunc)leafSetEql);
 	tree->root = NULL;
-	
+
 	tree->pooledNodes = NULL;
 	tree->allocatedBuffers = cpArrayNew(0);
-	
+
 	tree->stamp = 0;
-	
-	return (cpSpatialIndex *)tree;
+
+	return (cpSpatialIndex*)tree;
 }
 
 void
-cpBBTreeSetVelocityFunc(cpSpatialIndex *index, cpBBTreeVelocityFunc func)
+cpBBTreeSetVelocityFunc(cpSpatialIndex* index, cpBBTreeVelocityFunc func)
 {
-	if(index->klass != Klass()){
+	if (index->klass != Klass())
+	{
 		cpAssertWarn(cpFalse, "Ignoring cpBBTreeSetVelocityFunc() call to non-tree spatial index.");
 		return;
 	}
-	
-	((cpBBTree *)index)->velocityFunc = func;
+
+	((cpBBTree*)index)->velocityFunc = func;
 }
 
-cpSpatialIndex *
-cpBBTreeNew(cpSpatialIndexBBFunc bbfunc, cpSpatialIndex *staticIndex)
+cpSpatialIndex*
+cpBBTreeNew(cpSpatialIndexBBFunc bbfunc, cpSpatialIndex* staticIndex)
 {
 	return cpBBTreeInit(cpBBTreeAlloc(), bbfunc, staticIndex);
 }
 
 static void
-cpBBTreeDestroy(cpBBTree *tree)
+cpBBTreeDestroy(cpBBTree* tree)
 {
 	cpHashSetFree(tree->leaves);
-	
-	if(tree->allocatedBuffers) cpArrayFreeEach(tree->allocatedBuffers, cpfree);
+
+	if (tree->allocatedBuffers) cpArrayFreeEach(tree->allocatedBuffers, cpfree);
 	cpArrayFree(tree->allocatedBuffers);
 }
 
 //MARK: Insert/Remove
 
 static void
-cpBBTreeInsert(cpBBTree *tree, void *obj, cpHashValue hashid)
+cpBBTreeInsert(cpBBTree* tree, void* obj, cpHashValue hashid)
 {
-	Node *leaf = (Node *)cpHashSetInsert(tree->leaves, hashid, obj, (cpHashSetTransFunc)leafSetTrans, tree);
-	
-	Node *root = tree->root;
+	Node* leaf = (Node*)cpHashSetInsert(tree->leaves, hashid, obj, (cpHashSetTransFunc)leafSetTrans, tree);
+
+	Node* root = tree->root;
 	tree->root = SubtreeInsert(root, leaf, tree);
-	
+
 	leaf->STAMP = GetMasterTree(tree)->stamp;
 	LeafAddPairs(leaf, tree);
 	IncrementStamp(tree);
 }
 
 static void
-cpBBTreeRemove(cpBBTree *tree, void *obj, cpHashValue hashid)
+cpBBTreeRemove(cpBBTree* tree, void* obj, cpHashValue hashid)
 {
-	Node *leaf = (Node *)cpHashSetRemove(tree->leaves, hashid, obj);
-	
+	Node* leaf = (Node*)cpHashSetRemove(tree->leaves, hashid, obj);
+
 	tree->root = SubtreeRemove(tree->root, leaf, tree);
 	PairsClear(leaf, tree);
 	NodeRecycle(tree, leaf);
 }
 
 static cpBool
-cpBBTreeContains(cpBBTree *tree, void *obj, cpHashValue hashid)
+cpBBTreeContains(cpBBTree* tree, void* obj, cpHashValue hashid)
 {
 	return (cpHashSetFind(tree->leaves, hashid, obj) != NULL);
 }
 
 //MARK: Reindex
 
-static void LeafUpdateWrap(Node *leaf, cpBBTree *tree) {LeafUpdate(leaf, tree);}
+static void LeafUpdateWrap(Node* leaf, cpBBTree* tree)
+{
+	LeafUpdate(leaf, tree);
+}
 
 static void
-cpBBTreeReindexQuery(cpBBTree *tree, cpSpatialIndexQueryFunc func, void *data)
+cpBBTreeReindexQuery(cpBBTree* tree, cpSpatialIndexQueryFunc func, void* data)
 {
-	if(!tree->root) return;
-	
+	if (!tree->root) return;
+
 	// LeafUpdate() may modify tree->root. Don't cache it.
 	cpHashSetEach(tree->leaves, (cpHashSetIteratorFunc)LeafUpdateWrap, tree);
-	
-	cpSpatialIndex *staticIndex = tree->spatialIndex.staticIndex;
-	Node *staticRoot = (staticIndex && staticIndex->klass == Klass() ? ((cpBBTree *)staticIndex)->root : NULL);
-	
+
+	cpSpatialIndex* staticIndex = tree->spatialIndex.staticIndex;
+	Node* staticRoot = (staticIndex && staticIndex->klass == Klass() ? ((cpBBTree*)staticIndex)->root : NULL);
+
 	MarkContext context = {tree, staticRoot, func, data};
 	MarkSubtree(tree->root, &context);
-	if(staticIndex && !staticRoot) cpSpatialIndexCollideStatic((cpSpatialIndex *)tree, staticIndex, func, data);
-	
+	if (staticIndex && !staticRoot) cpSpatialIndexCollideStatic((cpSpatialIndex*)tree, staticIndex, func, data);
+
 	IncrementStamp(tree);
 }
 
 static void
-cpBBTreeReindex(cpBBTree *tree)
+cpBBTreeReindex(cpBBTree* tree)
 {
 	cpBBTreeReindexQuery(tree, VoidQueryFunc, NULL);
 }
 
 static void
-cpBBTreeReindexObject(cpBBTree *tree, void *obj, cpHashValue hashid)
+cpBBTreeReindexObject(cpBBTree* tree, void* obj, cpHashValue hashid)
 {
-	Node *leaf = (Node *)cpHashSetFind(tree->leaves, hashid, obj);
-	if(leaf){
-		if(LeafUpdate(leaf, tree)) LeafAddPairs(leaf, tree);
+	Node* leaf = (Node*)cpHashSetFind(tree->leaves, hashid, obj);
+	if (leaf)
+	{
+		if (LeafUpdate(leaf, tree)) LeafAddPairs(leaf, tree);
 		IncrementStamp(tree);
 	}
 }
@@ -672,35 +771,39 @@ cpBBTreeReindexObject(cpBBTree *tree, void *obj, cpHashValue hashid)
 //MARK: Query
 
 static void
-cpBBTreeSegmentQuery(cpBBTree *tree, void *obj, cpVect a, cpVect b, cpFloat t_exit, cpSpatialIndexSegmentQueryFunc func, void *data)
+cpBBTreeSegmentQuery(cpBBTree* tree, void* obj, cpVect a, cpVect b, cpFloat t_exit, cpSpatialIndexSegmentQueryFunc func, void* data)
 {
-	Node *root = tree->root;
-	if(root) SubtreeSegmentQuery(root, obj, a, b, t_exit, func, data);
+	Node* root = tree->root;
+	if (root) SubtreeSegmentQuery(root, obj, a, b, t_exit, func, data);
 }
 
 static void
-cpBBTreeQuery(cpBBTree *tree, void *obj, cpBB bb, cpSpatialIndexQueryFunc func, void *data)
+cpBBTreeQuery(cpBBTree* tree, void* obj, cpBB bb, cpSpatialIndexQueryFunc func, void* data)
 {
-	if(tree->root) SubtreeQuery(tree->root, obj, bb, func, data);
+	if (tree->root) SubtreeQuery(tree->root, obj, bb, func, data);
 }
 
 //MARK: Misc
 
 static int
-cpBBTreeCount(cpBBTree *tree)
+cpBBTreeCount(cpBBTree* tree)
 {
 	return cpHashSetCount(tree->leaves);
 }
 
-typedef struct eachContext {
+typedef struct eachContext
+{
 	cpSpatialIndexIteratorFunc func;
-	void *data;
+	void* data;
 } eachContext;
 
-static void each_helper(Node *node, eachContext *context){context->func(node->obj, context->data);}
+static void each_helper(Node* node, eachContext* context)
+{
+	context->func(node->obj, context->data);
+}
 
 static void
-cpBBTreeEach(cpBBTree *tree, cpSpatialIndexIteratorFunc func, void *data)
+cpBBTreeEach(cpBBTree* tree, cpSpatialIndexIteratorFunc func, void* data)
 {
 	eachContext context = {func, data};
 	cpHashSetEach(tree->leaves, (cpHashSetIteratorFunc)each_helper, &context);
@@ -708,96 +811,114 @@ cpBBTreeEach(cpBBTree *tree, cpSpatialIndexIteratorFunc func, void *data)
 
 static cpSpatialIndexClass klass = {
 	(cpSpatialIndexDestroyImpl)cpBBTreeDestroy,
-	
+
 	(cpSpatialIndexCountImpl)cpBBTreeCount,
 	(cpSpatialIndexEachImpl)cpBBTreeEach,
-	
+
 	(cpSpatialIndexContainsImpl)cpBBTreeContains,
 	(cpSpatialIndexInsertImpl)cpBBTreeInsert,
 	(cpSpatialIndexRemoveImpl)cpBBTreeRemove,
-	
+
 	(cpSpatialIndexReindexImpl)cpBBTreeReindex,
 	(cpSpatialIndexReindexObjectImpl)cpBBTreeReindexObject,
 	(cpSpatialIndexReindexQueryImpl)cpBBTreeReindexQuery,
-	
+
 	(cpSpatialIndexQueryImpl)cpBBTreeQuery,
 	(cpSpatialIndexSegmentQueryImpl)cpBBTreeSegmentQuery,
 };
 
-static inline cpSpatialIndexClass *Klass(){return &klass;}
+static inline cpSpatialIndexClass* Klass()
+{
+	return &klass;
+}
 
 
 //MARK: Tree Optimization
 
 static int
-cpfcompare(const cpFloat *a, const cpFloat *b){
+cpfcompare(const cpFloat* a, const cpFloat* b)
+{
 	return (*a < *b ? -1 : (*b < *a ? 1 : 0));
 }
 
 static void
-fillNodeArray(Node *node, Node ***cursor){
+fillNodeArray(Node* node, Node*** cursor)
+{
 	(**cursor) = node;
 	(*cursor)++;
 }
 
-static Node *
-partitionNodes(cpBBTree *tree, Node **nodes, int count)
+static Node*
+partitionNodes(cpBBTree* tree, Node** nodes, int count)
 {
-	if(count == 1){
+	if (count == 1)
+	{
 		return nodes[0];
-	} else if(count == 2) {
+	}
+	else if (count == 2)
+	{
 		return NodeNew(tree, nodes[0], nodes[1]);
 	}
-	
+
 	// Find the AABB for these nodes
 	cpBB bb = nodes[0]->bb;
-	for(int i=1; i<count; i++) bb = cpBBMerge(bb, nodes[i]->bb);
-	
+	for (int i = 1; i < count; i++) bb = cpBBMerge(bb, nodes[i]->bb);
+
 	// Split it on it's longest axis
 	cpBool splitWidth = (bb.r - bb.l > bb.t - bb.b);
-	
+
 	// Sort the bounds and use the median as the splitting point
-	cpFloat *bounds = (cpFloat *)cpcalloc(count*2, sizeof(cpFloat));
-	if(splitWidth){
-		for(int i=0; i<count; i++){
-			bounds[2*i + 0] = nodes[i]->bb.l;
-			bounds[2*i + 1] = nodes[i]->bb.r;
-		}
-	} else {
-		for(int i=0; i<count; i++){
-			bounds[2*i + 0] = nodes[i]->bb.b;
-			bounds[2*i + 1] = nodes[i]->bb.t;
+	cpFloat* bounds = (cpFloat*)cpcalloc(count * 2, sizeof(cpFloat));
+	if (splitWidth)
+	{
+		for (int i = 0; i < count; i++)
+		{
+			bounds[2 * i + 0] = nodes[i]->bb.l;
+			bounds[2 * i + 1] = nodes[i]->bb.r;
 		}
 	}
-	
-	qsort(bounds, count*2, sizeof(cpFloat), (int (*)(const void *, const void *))cpfcompare);
-	cpFloat split = (bounds[count - 1] + bounds[count])*0.5f; // use the medain as the split
+	else
+	{
+		for (int i = 0; i < count; i++)
+		{
+			bounds[2 * i + 0] = nodes[i]->bb.b;
+			bounds[2 * i + 1] = nodes[i]->bb.t;
+		}
+	}
+
+	qsort(bounds, count * 2, sizeof(cpFloat), (int (*)(const void*, const void*))cpfcompare);
+	cpFloat split = (bounds[count - 1] + bounds[count]) * 0.5f; // use the medain as the split
 	cpfree(bounds);
 
 	// Generate the child BBs
 	cpBB a = bb, b = bb;
-	if(splitWidth) a.r = b.l = split; else a.t = b.b = split;
-	
+	if (splitWidth) a.r = b.l = split; else a.t = b.b = split;
+
 	// Partition the nodes
 	int right = count;
-	for(int left=0; left < right;){
-		Node *node = nodes[left];
-		if(cpBBMergedArea(node->bb, b) < cpBBMergedArea(node->bb, a)){
-//		if(cpBBProximity(node->bb, b) < cpBBProximity(node->bb, a)){
+	for (int left = 0; left < right;)
+	{
+		Node* node = nodes[left];
+		if (cpBBMergedArea(node->bb, b) < cpBBMergedArea(node->bb, a))
+		{
+			//		if(cpBBProximity(node->bb, b) < cpBBProximity(node->bb, a)){
 			right--;
 			nodes[left] = nodes[right];
 			nodes[right] = node;
-		} else {
+		}
+		else
+		{
 			left++;
 		}
 	}
-	
-	if(right == count){
-		Node *node = NULL;
-		for(int i=0; i<count; i++) node = SubtreeInsert(node, nodes[i], tree);
+
+	if (right == count)
+	{
+		Node* node = NULL;
+		for (int i = 0; i < count; i++) node = SubtreeInsert(node, nodes[i], tree);
 		return node;
 	}
-	
+
 	// Recurse and build the node!
 	return NodeNew(tree,
 		partitionNodes(tree, nodes, right),
@@ -825,23 +946,24 @@ partitionNodes(cpBBTree *tree, Node **nodes, int count)
 //}
 
 void
-cpBBTreeOptimize(cpSpatialIndex *index)
+cpBBTreeOptimize(cpSpatialIndex* index)
 {
-	if(index->klass != &klass){
+	if (index->klass != &klass)
+	{
 		cpAssertWarn(cpFalse, "Ignoring cpBBTreeOptimize() call to non-tree spatial index.");
 		return;
 	}
-	
-	cpBBTree *tree = (cpBBTree *)index;
-	Node *root = tree->root;
-	if(!root) return;
-	
+
+	cpBBTree* tree = (cpBBTree*)index;
+	Node* root = tree->root;
+	if (!root) return;
+
 	int count = cpBBTreeCount(tree);
-	Node **nodes = (Node **)cpcalloc(count, sizeof(Node *));
-	Node **cursor = nodes;
-	
+	Node** nodes = (Node**)cpcalloc(count, sizeof(Node*));
+	Node** cursor = nodes;
+
 	cpHashSetEach(tree->leaves, (cpHashSetIteratorFunc)fillNodeArray, &cursor);
-	
+
 	SubtreeRecycle(tree, root);
 	tree->root = partitionNodes(tree, nodes, count);
 	cpfree(nodes);
@@ -856,41 +978,45 @@ cpBBTreeOptimize(cpSpatialIndex *index)
 #include <GLUT/glut.h>
 
 static void
-NodeRender(Node *node, int depth)
+NodeRender(Node* node, int depth)
 {
-	if(!NodeIsLeaf(node) && depth <= 10){
+	if (!NodeIsLeaf(node) && depth <= 10)
+	{
 		NodeRender(node->a, depth + 1);
 		NodeRender(node->b, depth + 1);
 	}
-	
+
 	cpBB bb = node->bb;
-	
-//	GLfloat v = depth/2.0f;	
-//	glColor3f(1.0f - v, v, 0.0f);
+
+	//	GLfloat v = depth/2.0f;	
+	//	glColor3f(1.0f - v, v, 0.0f);
 	glLineWidth(cpfmax(5.0f - depth, 1.0f));
-	glBegin(GL_LINES); {
+	glBegin(GL_LINES);
+	{
 		glVertex2f(bb.l, bb.b);
 		glVertex2f(bb.l, bb.t);
-		
+
 		glVertex2f(bb.l, bb.t);
 		glVertex2f(bb.r, bb.t);
-		
+
 		glVertex2f(bb.r, bb.t);
 		glVertex2f(bb.r, bb.b);
-		
+
 		glVertex2f(bb.r, bb.b);
 		glVertex2f(bb.l, bb.b);
 	}; glEnd();
 }
 
 void
-cpBBTreeRenderDebug(cpSpatialIndex *index){
-	if(index->klass != &klass){
+cpBBTreeRenderDebug(cpSpatialIndex* index)
+{
+	if (index->klass != &klass)
+	{
 		cpAssertWarn(cpFalse, "Ignoring cpBBTreeRenderDebug() call to non-tree spatial index.");
 		return;
 	}
-	
-	cpBBTree *tree = (cpBBTree *)index;
-	if(tree->root) NodeRender(tree->root, 0);
+
+	cpBBTree* tree = (cpBBTree*)index;
+	if (tree->root) NodeRender(tree->root, 0);
 }
 #endif
