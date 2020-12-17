@@ -649,7 +649,8 @@ cpSpaceEachBody(cpSpace* space, cpSpaceBodyIteratorFunc func, void* data)
 				body = next;
 			}
 		}
-	} cpSpaceUnlock(space, cpTrue);
+	} 
+	cpSpaceUnlock(space, cpTrue);
 }
 
 typedef struct spaceShapeContext

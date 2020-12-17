@@ -164,7 +164,8 @@ cpSpaceSegmentQueryFirst(cpSpace* space, cpVect start, cpVect end, cpFloat radiu
 		out = &info;
 	}
 
-	struct SegmentQueryContext context = {
+	struct SegmentQueryContext context = 
+	{
 		start, end,
 		radius,
 		filter,

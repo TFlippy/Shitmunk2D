@@ -1,15 +1,15 @@
 /* Copyright (c) 2013 Scott Lembcke and Howling Moon Software
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,46 +22,50 @@
 #include "chipmunk/chipmunk_private.h"
 
 void
-cpSpatialIndexFree(cpSpatialIndex *index)
+cpSpatialIndexFree(cpSpatialIndex* index)
 {
-	if(index){
+	if (index)
+	{
 		cpSpatialIndexDestroy(index);
 		cpfree(index);
 	}
 }
 
-cpSpatialIndex *
-cpSpatialIndexInit(cpSpatialIndex *index, cpSpatialIndexClass *klass, cpSpatialIndexBBFunc bbfunc, cpSpatialIndex *staticIndex)
+cpSpatialIndex*
+cpSpatialIndexInit(cpSpatialIndex* index, cpSpatialIndexClass* klass, cpSpatialIndexBBFunc bbfunc, cpSpatialIndex* staticIndex)
 {
 	index->klass = klass;
 	index->bbfunc = bbfunc;
 	index->staticIndex = staticIndex;
-	
-	if(staticIndex){
+
+	if (staticIndex)
+	{
 		cpAssertHard(!staticIndex->dynamicIndex, "This static index is already associated with a dynamic index.");
 		staticIndex->dynamicIndex = index;
 	}
-	
+
 	return index;
 }
 
-typedef struct dynamicToStaticContext {
+typedef struct dynamicToStaticContext
+{
 	cpSpatialIndexBBFunc bbfunc;
-	cpSpatialIndex *staticIndex;
+	cpSpatialIndex* staticIndex;
 	cpSpatialIndexQueryFunc queryFunc;
-	void *data;
+	void* data;
 } dynamicToStaticContext;
 
 static void
-dynamicToStaticIter(void *obj, dynamicToStaticContext *context)
+dynamicToStaticIter(void* obj, dynamicToStaticContext* context)
 {
 	cpSpatialIndexQuery(context->staticIndex, obj, context->bbfunc(obj), context->queryFunc, context->data);
 }
 
 void
-cpSpatialIndexCollideStatic(cpSpatialIndex *dynamicIndex, cpSpatialIndex *staticIndex, cpSpatialIndexQueryFunc func, void *data)
+cpSpatialIndexCollideStatic(cpSpatialIndex* dynamicIndex, cpSpatialIndex* staticIndex, cpSpatialIndexQueryFunc func, void* data)
 {
-	if(staticIndex && cpSpatialIndexCount(staticIndex) > 0){
+	if (staticIndex && cpSpatialIndexCount(staticIndex) > 0)
+	{
 		dynamicToStaticContext context = {dynamicIndex->bbfunc, staticIndex, func, data};
 		cpSpatialIndexEach(dynamicIndex, (cpSpatialIndexIteratorFunc)dynamicToStaticIter, &context);
 	}

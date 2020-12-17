@@ -399,14 +399,14 @@ cpSpaceStep(cpSpace* space, cpFloat dt)
 		for (int i = 0; i < bodies->num; i++)
 		{
 			cpBody* body = (cpBody*)bodies->arr[i];
-			body->position_func(body, dt);
+			cpBodyUpdatePosition(body, dt);
 		}
 
 		// Find colliding pairs.
 		cpSpacePushFreshContactBuffer(space);
 		cpSpatialIndexEach(space->dynamicShapes, (cpSpatialIndexIteratorFunc)cpShapeUpdateFunc, NULL);
 		cpSpatialIndexReindexQuery(space->dynamicShapes, (cpSpatialIndexQueryFunc)cpSpaceCollideShapes, space);
-	} 
+	}
 	cpSpaceUnlock(space, cpFalse);
 
 	// Rebuild the contact graph (and detect sleeping components if sleeping is enabled)
@@ -441,7 +441,7 @@ cpSpaceStep(cpSpace* space, cpFloat dt)
 		for (int i = 0; i < bodies->num; i++)
 		{
 			cpBody* body = (cpBody*)bodies->arr[i];
-			body->velocity_func(body, gravity, damping, dt);
+			cpBodyUpdateVelocity(body, gravity, damping, dt);
 		}
 
 		// Apply cached impulses
@@ -489,6 +489,6 @@ cpSpaceStep(cpSpace* space, cpFloat dt)
 			cpCollisionHandler* handler = arb->handler;
 			handler->postSolveFunc(arb, space, handler->userData);
 		}
-	} 
+	}
 	cpSpaceUnlock(space, cpTrue);
 }

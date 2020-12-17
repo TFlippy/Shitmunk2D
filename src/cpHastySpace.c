@@ -657,7 +657,7 @@ cpHastySpaceStep(cpSpace* space, cpFloat dt)
 		for (int i = 0; i < bodies->num; i++)
 		{
 			cpBody* body = (cpBody*)bodies->arr[i];
-			body->position_func(body, dt);
+			cpBodyUpdatePosition(body, dt);
 		}
 
 		// Find colliding pairs.
@@ -698,7 +698,7 @@ cpHastySpaceStep(cpSpace* space, cpFloat dt)
 		for (int i = 0; i < bodies->num; i++)
 		{
 			cpBody* body = (cpBody*)bodies->arr[i];
-			body->velocity_func(body, gravity, damping, dt);
+			cpBodyUpdateVelocity(body, gravity, damping, dt);
 		}
 
 		// Apply cached impulses

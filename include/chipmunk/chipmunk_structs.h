@@ -35,9 +35,9 @@ struct cpArray
 
 struct cpBody
 {
-	// Integration functions
-	cpBodyVelocityFunc velocity_func;
-	cpBodyPositionFunc position_func;
+	//// Integration functions
+	//cpBodyVelocityFunc velocity_func;
+	//cpBodyPositionFunc position_func;
 
 	// mass and it's inverse
 	cpFloat m;
@@ -457,7 +457,7 @@ struct cpSpace
 	cpArray* pooledArbiters;
 
 	cpArray* allocatedBuffers;
-	volatile long locked;
+	long locked;
 
 	cpBool usesWildcards;
 	cpHashSet* collisionHandlers;
