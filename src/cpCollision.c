@@ -704,7 +704,7 @@ SegmentToPoly(const cpSegmentShape* seg, const cpPolyShape* poly, struct cpColli
 	ChipmunkDebugDrawSegment(points.a, cpvadd(points.a, cpvmult(points.n, 10.0)), RGBAColor(1, 0, 0, 1));
 	#endif
 
-	cpVect n = points.n;
+	cpVect n = cpvneg(points.n);
 	cpVect rot = cpBodyGetRotation(seg->shape.body);
 
 	if (
@@ -716,7 +716,7 @@ SegmentToPoly(const cpSegmentShape* seg, const cpPolyShape* poly, struct cpColli
 			)
 		)
 	{
-		ContactPoints(SupportEdgeForSegment(seg, n), SupportEdgeForPoly(poly, cpvneg(n)), points, info);
+		ContactPoints(SupportEdgeForSegment(seg, n), SupportEdgeForPoly(poly, n), points, info);
 	}
 }
 
