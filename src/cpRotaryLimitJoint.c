@@ -38,6 +38,8 @@ preStep(cpRotaryLimitJoint* joint, cpFloat dt)
 		pdist = joint->min - dist;
 	}
 
+	//pdist = cpfmod(pdist, CP_PI);
+
 	// calculate moment of inertia coefficient.
 	joint->iSum = 1.0f / (a->i_inv + b->i_inv);
 
@@ -97,7 +99,8 @@ getImpulse(cpRotaryLimitJoint* joint)
 	return cpfabs(joint->jAcc);
 }
 
-static const cpConstraintClass klass = {
+static const cpConstraintClass klass = 
+{
 	(cpConstraintPreStepImpl)preStep,
 	(cpConstraintApplyCachedImpulseImpl)applyCachedImpulse,
 	(cpConstraintApplyImpulseImpl)applyImpulse,
@@ -119,6 +122,9 @@ cpRotaryLimitJointInit(cpRotaryLimitJoint* joint, cpBody* a, cpBody* b, cpFloat 
 	joint->max = max;
 
 	joint->jAcc = 0.0f;
+
+	joint->ratio_a = 1.00f;
+	joint->ratio_b = 1.00f;
 
 	return joint;
 }

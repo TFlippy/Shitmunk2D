@@ -47,6 +47,7 @@ cpShapeInit(cpShape* shape, const cpShapeClass* klass, cpBody* body, struct cpSh
 	shape->filter.categories = CP_ALL_CATEGORIES;
 	shape->filter.mask = CP_ALL_CATEGORIES;
 
+	shape->attached_component_id = 0;
 	shape->userData = NULL;
 
 	shape->space = NULL;
@@ -538,8 +539,8 @@ cpSegmentShapeInit(cpSegmentShape* seg, cpBody* body, cpVect a, cpVect b, cpFloa
 
 	seg->r = r;
 
-	seg->a_tangent = cpvzero;
-	seg->b_tangent = cpvzero;
+	//seg->a_tangent = cpvzero;
+	//seg->b_tangent = cpvzero;
 
 	cpShapeInit((cpShape*)seg, &cpSegmentShapeClass, body, cpSegmentShapeMassInfo(0.0f, a, b, r));
 
@@ -580,15 +581,15 @@ cpSegmentShapeGetRadius(const cpShape* shape)
 	return ((cpSegmentShape*)shape)->r;
 }
 
-void
-cpSegmentShapeSetNeighbors(cpShape* shape, cpVect prev, cpVect next)
-{
-	cpAssertHard(shape->klass == &cpSegmentShapeClass, "Shape is not a segment shape.");
-	cpSegmentShape* seg = (cpSegmentShape*)shape;
-
-	seg->a_tangent = cpvsub(prev, seg->a);
-	seg->b_tangent = cpvsub(next, seg->b);
-}
+//void
+//cpSegmentShapeSetNeighbors(cpShape* shape, cpVect prev, cpVect next)
+//{
+//	cpAssertHard(shape->klass == &cpSegmentShapeClass, "Shape is not a segment shape.");
+//	cpSegmentShape* seg = (cpSegmentShape*)shape;
+//
+//	seg->a_tangent = cpvsub(prev, seg->a);
+//	seg->b_tangent = cpvsub(next, seg->b);
+//}
 
 // Unsafe API (chipmunk_unsafe.h)
 

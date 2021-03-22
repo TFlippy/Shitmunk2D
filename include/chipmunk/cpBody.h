@@ -133,9 +133,9 @@ CP_EXPORT void cpBodySetTorque(cpBody *body, cpFloat torque);
 CP_EXPORT cpVect cpBodyGetRotation(const cpBody *body);
 
 /// Get the user data pointer assigned to the body.
-CP_EXPORT cpDataPointer cpBodyGetUserData(const cpBody *body);
+CP_EXPORT cpEntity cpBodyGetUserData(const cpBody *body);
 /// Set the user data pointer assigned to the body.
-CP_EXPORT void cpBodySetUserData(cpBody *body, cpDataPointer userData);
+CP_EXPORT void cpBodySetUserData(cpBody *body, cpEntity userData);
 
 /// Set the callback used to update a body's velocity.
 CP_EXPORT void cpBodySetVelocityUpdateFunc(cpBody *body, cpBodyVelocityFunc velocityFunc);
@@ -144,7 +144,7 @@ CP_EXPORT void cpBodySetVelocityUpdateFunc(cpBody *body, cpBodyVelocityFunc velo
 CP_EXPORT void cpBodySetPositionUpdateFunc(cpBody *body, cpBodyPositionFunc positionFunc);
 
 /// Default velocity integration function..
-CP_EXPORT void cpBodyUpdateVelocity(cpBody *body, cpVect gravity, cpFloat damping, cpFloat dt);
+CP_EXPORT void cpBodyUpdateVelocity(cpBody *body, cpVect gravity, cpFloat damping_v, cpFloat damping_w, cpFloat dt);
 /// Default position integration function.
 CP_EXPORT void cpBodyUpdatePosition(cpBody *body, cpFloat dt);
 
@@ -187,5 +187,9 @@ typedef void (*cpBodyArbiterIteratorFunc)(cpBody *body, cpArbiter *arbiter, void
 CP_EXPORT void cpBodyEachArbiter(cpBody *body, cpBodyArbiterIteratorFunc func, void *data);
 
 CP_EXPORT void cpBodyAccumulateMassFromShapes(cpBody* body);
+
+CP_EXPORT void cpBodyAddShape(cpBody* body, cpShape* shape);
+CP_EXPORT void cpBodyRemoveShape(cpBody* body, cpShape* shape);
+
 
 ///@}

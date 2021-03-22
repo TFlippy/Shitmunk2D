@@ -694,11 +694,13 @@ cpHastySpaceStep(cpSpace* space, cpFloat dt)
 
 		// Integrate velocities.
 		cpFloat damping = cpfpow(space->damping, dt);
+		cpFloat damping_w = cpfpow(space->damping_w, dt);
+
 		cpVect gravity = space->gravity;
 		for (int i = 0; i < bodies->num; i++)
 		{
 			cpBody* body = (cpBody*)bodies->arr[i];
-			cpBodyUpdateVelocity(body, gravity, damping, dt);
+			cpBodyUpdateVelocity(body, gravity, damping, damping_w, dt);
 		}
 
 		// Apply cached impulses

@@ -303,7 +303,7 @@ EPARecurse(const struct SupportContext* ctx, const int count, const struct Minko
 			minDist = d;
 			mini = i;
 		}
-}
+	}
 
 	struct MinkowskiPoint v0 = hull[mini];
 	struct MinkowskiPoint v1 = hull[(mini + 1) % count];
@@ -453,9 +453,9 @@ ShapePoint(const cpShape* shape, const int i)
 	} default:
 	{
 		return SupportPointNew(cpvzero, 0);
-			}
-		}
 	}
+	}
+}
 
 // Find the closest points between two shapes using the GJK algorithm.
 static struct ClosestPoints
@@ -616,15 +616,15 @@ CircleToSegment(const cpCircleShape* circle, const cpSegmentShape* segment, stru
 		cpVect n = info->n = (dist ? cpvmult(delta, 1.0f / dist) : segment->tn);
 
 		// Reject endcap collisions if tangents are provided.
-		cpVect rot = cpBodyGetRotation(segment->shape.body);
-		if (
+		//cpVect rot = cpBodyGetRotation(segment->shape.body);
+	/*	if (
 			(closest_t != 0.0f || cpvdot(n, cpvrotate(segment->a_tangent, rot)) >= 0.0) &&
 			(closest_t != 1.0f || cpvdot(n, cpvrotate(segment->b_tangent, rot)) >= 0.0)
 			)
-		{
+		{*/
 			cpCollisionInfoPushContact(info, cpvadd(center, cpvmult(n, circle->r)), cpvadd(closest, cpvmult(n, -segment->r)), 0);
-		}
-}
+		//}
+	}
 }
 
 static void
@@ -645,19 +645,20 @@ SegmentToSegment(const cpSegmentShape* seg1, const cpSegmentShape* seg2, struct 
 	#endif
 
 	cpVect n = points.n;
-	cpVect rot1 = cpBodyGetRotation(seg1->shape.body);
-	cpVect rot2 = cpBodyGetRotation(seg2->shape.body);
+	//cpVect rot1 = cpBodyGetRotation(seg1->shape.body);
+	//cpVect rot2 = cpBodyGetRotation(seg2->shape.body);
 
 	// If the closest points are nearer than the sum of the radii...
-	if (
-		points.d <= (seg1->r + seg2->r) && (
-			// Reject endcap collisions if tangents are provided.
-			(!cpveql(points.a, seg1->ta) || cpvdot(n, cpvrotate(seg1->a_tangent, rot1)) <= 0.0) &&
-			(!cpveql(points.a, seg1->tb) || cpvdot(n, cpvrotate(seg1->b_tangent, rot1)) <= 0.0) &&
-			(!cpveql(points.b, seg2->ta) || cpvdot(n, cpvrotate(seg2->a_tangent, rot2)) >= 0.0) &&
-			(!cpveql(points.b, seg2->tb) || cpvdot(n, cpvrotate(seg2->b_tangent, rot2)) >= 0.0)
-			)
-		)
+	//if (points.d <= (seg1->r + seg2->r) // && (
+	 // && (
+			//// Reject endcap collisions if tangents are provided.
+			//(!cpveql(points.a, seg1->ta) || cpvdot(n, cpvrotate(seg1->a_tangent, rot1)) <= 0.0) &&
+			//(!cpveql(points.a, seg1->tb) || cpvdot(n, cpvrotate(seg1->b_tangent, rot1)) <= 0.0) &&
+			//(!cpveql(points.b, seg2->ta) || cpvdot(n, cpvrotate(seg2->a_tangent, rot2)) >= 0.0) &&
+			//(!cpveql(points.b, seg2->tb) || cpvdot(n, cpvrotate(seg2->b_tangent, rot2)) >= 0.0)
+			//)
+	//if (points.d - seg1->r - seg2->r <= 0.0)
+	if (points.d <= (seg1->r + seg2->r))
 	{
 		ContactPoints(SupportEdgeForSegment(seg1, n), SupportEdgeForSegment(seg2, cpvneg(n)), points, info);
 	}
@@ -705,15 +706,15 @@ SegmentToPoly(const cpSegmentShape* seg, const cpPolyShape* poly, struct cpColli
 	#endif
 
 	cpVect n = cpvneg(points.n);
-	cpVect rot = cpBodyGetRotation(seg->shape.body);
+	//cpVect rot = cpBodyGetRotation(seg->shape.body);
 
 	if (
 		// If the closest points are nearer than the sum of the radii...
-		points.d - seg->r - poly->r <= 0.0 && (
-			// Reject endcap collisions if tangents are provided.
-			(!cpveql(points.a, seg->ta) || cpvdot(n, cpvrotate(seg->a_tangent, rot)) <= 0.0) &&
-			(!cpveql(points.a, seg->tb) || cpvdot(n, cpvrotate(seg->b_tangent, rot)) <= 0.0)
-			)
+		points.d - seg->r - poly->r <= 0.0 // && (
+			//// Reject endcap collisions if tangents are provided.
+			//(!cpveql(points.a, seg->ta) || cpvdot(n, cpvrotate(seg->a_tangent, rot)) <= 0.0) &&
+			//(!cpveql(points.a, seg->tb) || cpvdot(n, cpvrotate(seg->b_tangent, rot)) <= 0.0)
+			//)
 		)
 	{
 		ContactPoints(SupportEdgeForSegment(seg, n), SupportEdgeForPoly(poly, n), points, info);

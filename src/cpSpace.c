@@ -148,6 +148,7 @@ cpSpaceInit(cpSpace* space)
 
 	space->gravity = cpvzero;
 	space->damping = 1.0f;
+	space->damping_w = 1.0f;
 
 	space->collisionSlop = 0.1f;
 	space->collisionBias = cpfpow(1.0f - 0.1f, 60.0f);
@@ -451,7 +452,7 @@ cpSpaceAddShape(cpSpace* space, cpShape* shape)
 	cpBody* body = shape->body;
 
 	cpBool isStatic = (cpBodyGetType(body) == CP_BODY_TYPE_STATIC);
-	if (!isStatic) cpBodyActivate(body);
+	//if (!isStatic) cpBodyActivate(body);
 	cpBodyAddShape(body, shape);
 
 	shape->hashid = space->shapeIDCounter++;
@@ -484,16 +485,19 @@ cpSpaceAddConstraint(cpSpace* space, cpConstraint* constraint)
 
 	cpBody* a = constraint->a, * b = constraint->b;
 	cpAssertHard(a != NULL && b != NULL, "Constraint is attached to a NULL body.");
-	//	cpAssertHard(a->space == space && b->space == space, "The constraint's bodies must be added to the space before the constraint.");
+	cpAssertHard(a->space == space && b->space == space, "The constraint's bodies must be added to the space before the constraint.");
 
-	cpBodyActivate(a);
-	cpBodyActivate(b);
-	cpArrayPush(space->constraints, constraint);
+	if (a != b && a != NULL && b != NULL)
+	{
+		cpBodyActivate(a);
+		cpBodyActivate(b);
+		cpArrayPush(space->constraints, constraint);
 
-	// Push onto the heads of the bodies' constraint lists
-	constraint->next_a = a->constraintList; a->constraintList = constraint;
-	constraint->next_b = b->constraintList; b->constraintList = constraint;
-	constraint->space = space;
+		// Push onto the heads of the bodies' constraint lists
+		constraint->next_a = a->constraintList; a->constraintList = constraint;
+		constraint->next_b = b->constraintList; b->constraintList = constraint;
+		constraint->space = space;
+	}
 
 	return constraint;
 }
@@ -556,14 +560,14 @@ cpSpaceRemoveShape(cpSpace* space, cpShape* shape)
 	cpAssertSpaceUnlocked(space);
 
 	cpBool isStatic = (cpBodyGetType(body) == CP_BODY_TYPE_STATIC);
-	if (isStatic)
-	{
-		cpBodyActivateStatic(body, shape);
-	}
-	else
-	{
-		cpBodyActivate(body);
-	}
+	//if (isStatic)
+	//{
+	//	cpBodyActivateStatic(body, shape);
+	//}
+	//else
+	//{
+	//	cpBodyActivate(body);
+	//}
 
 	cpBodyRemoveShape(body, shape);
 	cpSpaceFilterArbiters(space, body, shape);
@@ -577,8 +581,8 @@ cpSpaceRemoveBody(cpSpace* space, cpBody* body)
 {
 	cpAssertHard(body != cpSpaceGetStaticBody(space), "Cannot remove the designated static body for the space.");
 	cpAssertHard(cpSpaceContainsBody(space, body), "Cannot remove a body that was not added to the space. (Removed twice maybe?)");
-	//	cpAssertHard(body->shapeList == NULL, "Cannot remove a body from the space before removing the bodies attached to it.");
-	//	cpAssertHard(body->constraintList == NULL, "Cannot remove a body from the space before removing the constraints attached to it.");
+	//cpAssertHard(body->shapeList == NULL, "Cannot remove a body from the space before removing the bodies attached to it.");
+	cpAssertHard(body->constraintList == NULL, "Cannot remove a body from the space before removing the constraints attached to it.");
 	cpAssertSpaceUnlocked(space);
 
 	cpBodyActivate(body);
@@ -594,12 +598,14 @@ cpSpaceRemoveConstraint(cpSpace* space, cpConstraint* constraint)
 	cpAssertSpaceUnlocked(space);
 
 	if (constraint->a != NULL) cpBodyActivate(constraint->a);
-	if (constraint->b != NULL) cpBodyActivate(constraint->b);
+	if (constraint->b != NULL && constraint->b != constraint->a) cpBodyActivate(constraint->b);
 	cpArrayDeleteObj(space->constraints, constraint);
 
 	if (constraint->a != NULL) cpBodyRemoveConstraint(constraint->a, constraint);
-	if (constraint->b != NULL) cpBodyRemoveConstraint(constraint->b, constraint);
+	if (constraint->b != NULL && constraint->b != constraint->a) cpBodyRemoveConstraint(constraint->b, constraint);
+
 	constraint->space = NULL;
+	constraint->b = NULL;
 }
 
 cpBool cpSpaceContainsShape(cpSpace* space, cpShape* shape)
@@ -649,7 +655,7 @@ cpSpaceEachBody(cpSpace* space, cpSpaceBodyIteratorFunc func, void* data)
 				body = next;
 			}
 		}
-	} 
+	}
 	cpSpaceUnlock(space, cpTrue);
 }
 

@@ -35,39 +35,14 @@ struct cpArray
 
 struct cpBody
 {
-	//// Integration functions
-	//cpBodyVelocityFunc velocity_func;
-	//cpBodyPositionFunc position_func;
-
-	// mass and it's inverse
-	cpFloat m;
-	cpFloat m_inv;
-
-	// moment of inertia and it's inverse
-	cpFloat i;
-	cpFloat i_inv;
-
-	// center of gravity
 	cpVect cog;
-
-	// position, velocity, force
+	cpVect v_bias;
 	cpVect p;
 	cpVect v;
 	cpVect f;
 
-	// Angle, angular velocity, torque (radians)
-	cpFloat a;
-	cpFloat w;
-	cpFloat t;
-
-	cpTransform transform;
-
-	cpDataPointer userData;
-
-	// "pseudo-velocities" used for eliminating overlap.
-	// Erin Catto has some papers that talk about what these are.
-	cpVect v_bias;
-	cpFloat w_bias;
+	cpEntity owner_entity;
+	cpEntity parent_entity;
 
 	cpSpace* space;
 
@@ -81,6 +56,21 @@ struct cpBody
 		cpBody* next;
 		cpFloat idleTime;
 	} sleeping;
+
+	cpFloat a;
+	cpFloat w;
+	cpFloat t;
+
+	cpFloat m;
+	cpFloat m_inv;
+
+	cpFloat i;
+	cpFloat i_inv;
+
+	cpFloat w_bias;
+	cpFloat gravity;
+
+	cpTransform transform;
 };
 
 enum cpArbiterState
@@ -202,6 +192,13 @@ struct cpShape
 
 	cpDataPointer userData;
 
+	uint8_t material_id;
+	uint8_t team_id;
+	uint8_t block_id;
+	uint8_t unused_1;
+
+	uint64_t attached_component_id;
+
 	cpCollisionType type;
 	cpShapeFilter filter;
 
@@ -227,7 +224,7 @@ struct cpSegmentShape
 	cpVect ta, tb, tn;
 	cpFloat r;
 
-	cpVect a_tangent, b_tangent;
+	//cpVect a_tangent, b_tangent;
 };
 
 struct cpSplittingPlane
@@ -322,7 +319,11 @@ struct cpPivotJoint
 	cpMat2x2 k;
 
 	cpVect jAcc;
+	cpVect jAcc_raw;
+
 	cpVect bias;
+
+	cpVect delta;
 };
 
 struct cpGrooveJoint
@@ -383,6 +384,9 @@ struct cpRotaryLimitJoint
 
 	cpFloat bias;
 	cpFloat jAcc;
+
+	cpFloat ratio_a;
+	cpFloat ratio_b;
 };
 
 struct cpRatchetJoint
@@ -427,6 +431,7 @@ struct cpSpace
 
 	cpVect gravity;
 	cpFloat damping;
+	cpFloat damping_w;
 
 	cpFloat idleSpeedThreshold;
 	cpFloat sleepTimeThreshold;

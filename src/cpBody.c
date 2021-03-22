@@ -55,7 +55,10 @@ cpBodyInit(cpBody* body, cpFloat mass, cpFloat moment)
 	body->v_bias = cpvzero;
 	body->w_bias = 0.0f;
 
-	body->userData = NULL;
+	body->gravity = 1.00f;
+
+	body->owner_entity = NULL;
+	body->parent_entity = NULL;
 
 	// Setters must be called after full initialization so the sanity checks don't assert on garbage data.
 	cpBodySetMass(body, mass);
@@ -322,10 +325,30 @@ cpBodyAddShape(cpBody* body, cpShape* shape)
 	shape->next = next;
 	body->shapeList = shape;
 
-	if (shape->massInfo.m > 0.0f)
+	/*if (shape->massInfo.m > 0.0f)
 	{
 		cpBodyAccumulateMassFromShapes(body);
-	}
+	}*/
+
+	//if (shape_new == NULL) return;
+
+	//cpShape* shape = body->shapeList;
+	//while (shape)
+	//{
+	//	if (shape = shape_new) return;
+	//	shape = shape_new->next;
+	//}
+
+	//cpShape* next = body->shapeList;
+	//if (next) next->prev = shape_new;
+
+	//shape_new->next = next;
+	//body->shapeList = shape_new;
+
+	//if (shape_new->massInfo.m > 0.0f)
+	//{
+	//	cpBodyAccumulateMassFromShapes(body);
+	//}
 }
 
 void
@@ -351,10 +374,10 @@ cpBodyRemoveShape(cpBody* body, cpShape* shape)
 	shape->prev = NULL;
 	shape->next = NULL;
 
-	if (cpBodyGetType(body) == CP_BODY_TYPE_DYNAMIC && shape->massInfo.m > 0.0f)
-	{
-		cpBodyAccumulateMassFromShapes(body);
-	}
+	//if (cpBodyGetType(body) == CP_BODY_TYPE_DYNAMIC && shape->massInfo.m > 0.0f)
+	//{
+	//	cpBodyAccumulateMassFromShapes(body);
+	//}
 }
 
 static cpConstraint*
@@ -505,16 +528,16 @@ cpBodySetTorque(cpBody* body, cpFloat torque)
 	cpAssertSaneBody(body);
 }
 
-cpDataPointer
+cpEntity
 cpBodyGetUserData(const cpBody* body)
 {
-	return body->userData;
+	return body->owner_entity;
 }
 
 void
-cpBodySetUserData(cpBody* body, cpDataPointer userData)
+cpBodySetUserData(cpBody* body, cpEntity userData)
 {
-	body->userData = userData;
+	body->owner_entity = userData;
 }
 //
 //void
@@ -530,15 +553,21 @@ cpBodySetUserData(cpBody* body, cpDataPointer userData)
 //}
 
 inline void
-cpBodyUpdateVelocity(cpBody* body, cpVect gravity, cpFloat damping, cpFloat dt)
+cpBodyUpdateVelocity(cpBody* body, cpVect gravity, cpFloat damping_v, cpFloat damping_w, cpFloat dt)
 {
 	// Skip kinematic bodies.
 	if (cpBodyGetType(body) == CP_BODY_TYPE_KINEMATIC) return;
 
 	cpAssertSoft(body->m > 0.0f && body->i > 0.0f, "Body's mass and moment must be positive to simulate. (Mass: %f Moment: %f)", body->m, body->i);
 
-	body->v = cpvadd(cpvmult(body->v, damping), cpvmult(cpvadd(gravity, cpvmult(body->f, body->m_inv)), dt));
-	body->w = body->w * damping + body->t * body->i_inv * dt;
+	//cpVect v_add = cpvmult(cpvadd(cpvmult(gravity, body->gravity * body->m), body->f), (dt * body->m_inv));
+
+	body->v = cpvadd(cpvmult(body->v, damping_v), cpvmult(cpvadd(gravity * body->gravity, cpvmult(body->f, body->m_inv)), dt));
+	//body->v = cpvadd(body->v, v_add);
+	body->w = body->w * damping_w + body->t * body->i_inv * dt;
+
+	//body->v = cpvadd(cpvmult(body->v, damping_v), cpvmult(cpvadd(gravity * body->gravity, cpvmult(body->f, body->m_inv)), dt));
+	//body->w = body->w * damping_w + body->t * body->i_inv * dt;
 
 	// Reset forces.
 	body->f = cpvzero;

@@ -68,17 +68,13 @@ cpSpaceAddPostStepCallback(cpSpace* space, cpPostStepFunc func, void* key, void*
 void
 cpSpaceLock(cpSpace* space)
 {
-	_InterlockedIncrement(&space->locked);
-
-	//space->locked++;
+	space->locked++;
 }
 
 void
 cpSpaceUnlock(cpSpace* space, cpBool runPostStep)
 {
-	_InterlockedDecrement(&space->locked);
-
-	//space->locked--;
+	space->locked--;
 	cpAssertHard(space->locked >= 0, "Internal Error: Space lock underflow.");
 
 	if (space->locked == 0)
@@ -249,6 +245,7 @@ QueryReject(cpShape* a, cpShape* b)
 		!cpBBIntersects(a->bb, b->bb)
 		// Don't collide shapes attached to the same body.
 		|| a->body == b->body
+		|| (a->body->parent_entity != 0 && a->body->parent_entity == b->body->parent_entity)
 		// Don't collide shapes that are filtered.
 		|| cpShapeFilterReject(a->filter, b->filter)
 		// Don't collide bodies if they have a constraint with collideBodies == cpFalse.
@@ -437,11 +434,13 @@ cpSpaceStep(cpSpace* space, cpFloat dt)
 
 		// Integrate velocities.
 		cpFloat damping = cpfpow(space->damping, dt);
+		cpFloat damping_w = cpfpow(space->damping_w, dt);
+
 		cpVect gravity = space->gravity;
 		for (int i = 0; i < bodies->num; i++)
 		{
 			cpBody* body = (cpBody*)bodies->arr[i];
-			cpBodyUpdateVelocity(body, gravity, damping, dt);
+			cpBodyUpdateVelocity(body, gravity, damping, damping_w, dt);
 		}
 
 		// Apply cached impulses

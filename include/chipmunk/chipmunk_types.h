@@ -217,7 +217,7 @@ typedef uintptr_t cpCollisionType;
 typedef CP_GROUP_TYPE cpGroup;
 #else
 /// Type used for cpShape.group.
-typedef uintptr_t cpGroup;
+typedef unsigned long long cpGroup;
 #endif
 
 #ifdef CP_BITMASK_TYPE

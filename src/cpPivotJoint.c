@@ -34,8 +34,8 @@ preStep(cpPivotJoint* joint, cpFloat dt)
 	joint->k = k_tensor(a, b, joint->r1, joint->r2);
 
 	// calculate bias velocity
-	cpVect delta = cpvsub(cpvadd(b->p, joint->r2), cpvadd(a->p, joint->r1));
-	joint->bias = cpvclamp(cpvmult(delta, -bias_coef(joint->constraint.errorBias, dt) / dt), joint->constraint.maxBias);
+	joint->delta = cpvsub(cpvadd(b->p, joint->r2), cpvadd(a->p, joint->r1));
+	joint->bias = cpvclamp(cpvmult(joint->delta, -bias_coef(joint->constraint.errorBias, dt) / dt), joint->constraint.maxBias);
 }
 
 static void
@@ -61,8 +61,10 @@ applyImpulse(cpPivotJoint* joint, cpFloat dt)
 
 	// compute normal impulse
 	cpVect j = cpMat2x2Transform(joint->k, cpvsub(joint->bias, vr));
+
 	cpVect jOld = joint->jAcc;
-	joint->jAcc = cpvclamp(cpvadd(joint->jAcc, j), joint->constraint.maxForce * dt);
+	joint->jAcc_raw = cpvadd(joint->jAcc, j);
+	joint->jAcc = cpvclamp(joint->jAcc_raw, joint->constraint.maxForce * dt);
 	j = cpvsub(joint->jAcc, jOld);
 
 	// apply impulse
@@ -97,6 +99,7 @@ cpPivotJointInit(cpPivotJoint* joint, cpBody* a, cpBody* b, cpVect anchorA, cpVe
 	joint->anchorB = anchorB;
 
 	joint->jAcc = cpvzero;
+	joint->jAcc_raw = cpvzero;
 
 	return joint;
 }

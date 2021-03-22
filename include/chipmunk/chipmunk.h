@@ -24,7 +24,6 @@
 
 #include <stdlib.h>
 #include <math.h>
-#include <atomic>
 
 #ifndef alloca
 	#ifdef _WIN32
@@ -126,6 +125,8 @@ typedef struct cpSpace cpSpace;
 #include "cpConstraint.h"
 
 #include "cpSpace.h"
+
+#include "chipmunk_unsafe.h"
 
 // Chipmunk 7.0.3
 #define CP_VERSION_MAJOR 7

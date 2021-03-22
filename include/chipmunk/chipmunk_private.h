@@ -70,8 +70,8 @@ void cpHashSetFilter(cpHashSet *set, cpHashSetFilterFunc func, void *data);
 
 //MARK: Bodies
 
-void cpBodyAddShape(cpBody *body, cpShape *shape);
-void cpBodyRemoveShape(cpBody *body, cpShape *shape);
+//CP_EXPORT void cpBodyAddShape(cpBody *body, cpShape *shape);
+//CP_EXPORT void cpBodyRemoveShape(cpBody *body, cpShape *shape);
 
 //void cpBodyAccumulateMassForShape(cpBody *body, cpShape *shape);
 //void cpBodyAccumulateMassFromShapes(cpBody *body);
@@ -145,13 +145,7 @@ static inline cpBool
 cpShapeFilterReject(cpShapeFilter a, cpShapeFilter b)
 {
 	// Reject the collision if:
-	return (
-		// They are in the same non-zero group.
-		(a.group != 0 && a.group == b.group) ||
-		// One of the category/mask combinations fails.
-		(a.categories & b.mask) == 0 ||
-		(b.categories & a.mask) == 0
-	);
+	return ((a.group != 0 && a.group == b.group) || ((a.categories & b.mask) == 0 && (b.categories & a.mask) == 0));
 }
 
 void cpLoopIndexes(const cpVect *verts, int count, int *start, int *end);
