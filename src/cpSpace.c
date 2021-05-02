@@ -452,8 +452,8 @@ cpSpaceAddShape(cpSpace* space, cpShape* shape)
 	cpBody* body = shape->body;
 
 	cpBool isStatic = (cpBodyGetType(body) == CP_BODY_TYPE_STATIC);
-	//if (!isStatic) cpBodyActivate(body);
-	cpBodyAddShape(body, shape);
+	if (!isStatic) cpBodyActivate(body);
+	//cpBodyAddShape(body, shape);
 
 	shape->hashid = space->shapeIDCounter++;
 	cpShapeUpdate(shape, body->transform);
@@ -469,6 +469,9 @@ cpSpaceAddBody(cpSpace* space, cpBody* body)
 	cpAssertHard(body->space != space, "You have already added this body to this space. You must not add it a second time.");
 	cpAssertHard(!body->space, "You have already added this body to another space. You cannot add it to a second.");
 	cpAssertSpaceUnlocked(space);
+
+	body->f = cpvzero;
+	body->t = 0.00f;
 
 	cpArrayPush(cpSpaceArrayForBodyType(space, cpBodyGetType(body)), body);
 	body->space = space;
@@ -549,7 +552,8 @@ cpSpaceFilterArbiters(cpSpace* space, cpBody* body, cpShape* filter)
 	{
 		struct arbiterFilterContext context = {space, body, filter};
 		cpHashSetFilter(space->cachedArbiters, (cpHashSetFilterFunc)cachedArbitersFilter, &context);
-	} cpSpaceUnlock(space, cpTrue);
+	} 
+	cpSpaceUnlock(space, cpTrue);
 }
 
 void
@@ -560,16 +564,16 @@ cpSpaceRemoveShape(cpSpace* space, cpShape* shape)
 	cpAssertSpaceUnlocked(space);
 
 	cpBool isStatic = (cpBodyGetType(body) == CP_BODY_TYPE_STATIC);
-	//if (isStatic)
-	//{
-	//	cpBodyActivateStatic(body, shape);
-	//}
-	//else
-	//{
-	//	cpBodyActivate(body);
-	//}
+	if (isStatic)
+	{
+		cpBodyActivateStatic(body, shape);
+	}
+	else
+	{
+		cpBodyActivate(body);
+	}
 
-	cpBodyRemoveShape(body, shape);
+	//cpBodyRemoveShape(body, shape);
 	cpSpaceFilterArbiters(space, body, shape);
 	cpSpatialIndexRemove(isStatic ? space->staticShapes : space->dynamicShapes, shape, shape->hashid);
 	shape->space = NULL;
@@ -582,11 +586,20 @@ cpSpaceRemoveBody(cpSpace* space, cpBody* body)
 	cpAssertHard(body != cpSpaceGetStaticBody(space), "Cannot remove the designated static body for the space.");
 	cpAssertHard(cpSpaceContainsBody(space, body), "Cannot remove a body that was not added to the space. (Removed twice maybe?)");
 	//cpAssertHard(body->shapeList == NULL, "Cannot remove a body from the space before removing the bodies attached to it.");
-	cpAssertHard(body->constraintList == NULL, "Cannot remove a body from the space before removing the constraints attached to it.");
+	//cpAssertHard(body->constraintList == NULL, "Cannot remove a body from the space before removing the constraints attached to it.");
 	cpAssertSpaceUnlocked(space);
 
 	cpBodyActivate(body);
-	//	cpSpaceFilterArbiters(space, body, NULL);
+
+	//cpConstraint* constraint = body->constraintList;
+	//while (constraint)
+	//{
+	//	cpConstraint* next = cpConstraintNext(constraint, body);
+	//	cpSpaceRemoveConstraint(space, constraint);
+	//	constraint = next;
+	//}
+
+	//cpSpaceFilterArbiters(space, body, NULL);
 	cpArrayDeleteObj(cpSpaceArrayForBodyType(space, cpBodyGetType(body)), body);
 	body->space = NULL;
 }

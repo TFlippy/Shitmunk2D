@@ -265,7 +265,7 @@ bias_coef(cpFloat errorBias, cpFloat dt)
 //MARK: Spaces
 
 #define cpAssertSpaceUnlocked(space) \
-	cpAssertHard(!space->locked, \
+	if (space != NULL) cpAssertHard(!space->locked, \
 		"This operation cannot be done safely during a call to cpSpaceStep() or during a query. " \
 		"Put these calls into a post-step callback." \
 	);

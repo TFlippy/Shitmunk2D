@@ -384,6 +384,7 @@ struct cpRotaryLimitJoint
 
 	cpFloat bias;
 	cpFloat jAcc;
+	cpFloat friction;
 
 	cpFloat ratio_a;
 	cpFloat ratio_b;

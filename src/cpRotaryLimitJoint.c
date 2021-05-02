@@ -28,6 +28,14 @@ preStep(cpRotaryLimitJoint* joint, cpFloat dt)
 	cpBody* b = joint->constraint.b;
 
 	cpFloat dist = b->a - a->a;
+	////cpFloat dist = cpfmod(b->a - a->a, CP_PI * 2.00f);
+	//cpFloat dist_a = cpangdiff(b->a, a->a);
+	//cpFloat dist_b = cpangdiff(a->a, b->a);
+	//
+	//cpFloat dist = 0.00f;
+	//if (cpfabs(dist_a) < cpfabs(dist_b)) dist = dist_b;
+	//else dist = dist_a;
+
 	cpFloat pdist = 0.0f;
 	if (dist > joint->max)
 	{
@@ -65,33 +73,62 @@ applyCachedImpulse(cpRotaryLimitJoint* joint, cpFloat dt_coef)
 static void
 applyImpulse(cpRotaryLimitJoint* joint, cpFloat dt)
 {
-	if (!joint->bias) return; // early exit
-
 	cpBody* a = joint->constraint.a;
 	cpBody* b = joint->constraint.b;
 
 	// compute relative rotational velocity
 	cpFloat wr = b->w - a->w;
 
-	cpFloat jMax = joint->constraint.maxForce * dt;
+	cpFloat jMax_friction = joint->friction * dt;
+	cpFloat jMax = cpfmax(joint->friction, joint->constraint.maxForce) * dt;
 
 	// compute normal impulse	
-	cpFloat j = -(joint->bias + wr) * joint->iSum;
+	cpFloat j = -((jMax_friction >= jMax ? 0.00f : joint->bias) + wr) * joint->iSum;
+	//cpFloat j_friction = -wr * joint->iSum;
+
 	cpFloat jOld = joint->jAcc;
+	//joint->jAcc = cpfclamp(jOld + j, -jMax, jMax);
+
+	//joint->jAcc = cpfclamp(jOld + j_friction, -jMax_friction, jMax_friction);
+
 	if (joint->bias < 0.0f)
 	{
-		joint->jAcc = cpfclamp(jOld + j, 0.0f, jMax);
+		joint->jAcc = cpfclamp(jOld + j, -jMax_friction, jMax);
 	}
 	else
 	{
-		joint->jAcc = cpfclamp(jOld + j, -jMax, 0.0f);
+		joint->jAcc = cpfclamp(jOld + j, -jMax, jMax_friction);
 	}
+
 	j = joint->jAcc - jOld;
 
 	// apply impulse
 	a->w -= j * a->i_inv;
 	b->w += j * b->i_inv;
 }
+
+
+//static void
+//applyImpulse(cpSimpleMotor* joint, cpFloat dt)
+//{
+//	cpBody* a = joint->constraint.a;
+//	cpBody* b = joint->constraint.b;
+//
+//	// compute relative rotational velocity
+//	cpFloat wr = b->w - a->w + joint->rate;
+//
+//	cpFloat jMax = joint->constraint.maxForce * dt;
+//
+//	// compute normal impulse	
+//	cpFloat j = -wr * joint->iSum;
+//	cpFloat jOld = joint->jAcc;
+//	joint->jAcc = cpfclamp(jOld + j, -jMax, jMax);
+//	j = joint->jAcc - jOld;
+//
+//	// apply impulse
+//	a->w -= j * a->i_inv;
+//	b->w += j * b->i_inv;
+//}
 
 static cpFloat
 getImpulse(cpRotaryLimitJoint* joint)
@@ -122,6 +159,7 @@ cpRotaryLimitJointInit(cpRotaryLimitJoint* joint, cpBody* a, cpBody* b, cpFloat 
 	joint->max = max;
 
 	joint->jAcc = 0.0f;
+	joint->friction = 0.00f;
 
 	joint->ratio_a = 1.00f;
 	joint->ratio_b = 1.00f;

@@ -342,8 +342,8 @@ cpSpaceSegmentQuery2(cpSpace* space, cpVect start, cpVect end, cpFloat radius, c
 		max_count
 	};
 
-	if ((flags & QUERY_DYNAMIC) && meta.count < meta.max_count) cpSpatialIndexSegmentQuery(space->staticShapes, &context, start, end, 1.0f, (cpSpatialIndexSegmentQueryFunc)SegmentQuery2, &meta);
-	if ((flags & QUERY_STATIC) && meta.count < meta.max_count) cpSpatialIndexSegmentQuery(space->dynamicShapes, &context, start, end, 1.0f, (cpSpatialIndexSegmentQueryFunc)SegmentQuery2, &meta);
+	if ((flags & QUERY_DYNAMIC) && meta.count < meta.max_count) cpSpatialIndexSegmentQuery(space->dynamicShapes, &context, start, end, 1.0f, (cpSpatialIndexSegmentQueryFunc)SegmentQuery2, &meta);
+	if ((flags & QUERY_STATIC) && meta.count < meta.max_count) cpSpatialIndexSegmentQuery(space->staticShapes, &context, start, end, 1.0f, (cpSpatialIndexSegmentQueryFunc)SegmentQuery2, &meta);
 
 	return meta.count;
 }
@@ -384,8 +384,8 @@ cpSpaceBBQuery2(cpSpace* space, cpBB bb, cpShapeFilter filter, cpBBQueryInfo* re
 		max_count
 	};
 
-	if ((flags & QUERY_DYNAMIC) && meta.count < meta.max_count) cpSpatialIndexQuery(space->staticShapes, &context, bb, (cpSpatialIndexQueryFunc)BBQuery2, &meta);
-	if ((flags & QUERY_STATIC) && meta.count < meta.max_count) cpSpatialIndexQuery(space->dynamicShapes, &context, bb, (cpSpatialIndexQueryFunc)BBQuery2, &meta);
+	if ((flags & QUERY_DYNAMIC) && meta.count < meta.max_count) cpSpatialIndexQuery(space->dynamicShapes, &context, bb, (cpSpatialIndexQueryFunc)BBQuery2, &meta);
+	if ((flags & QUERY_STATIC) && meta.count < meta.max_count) cpSpatialIndexQuery(space->staticShapes, &context, bb, (cpSpatialIndexQueryFunc)BBQuery2, &meta);
 
 	return meta.count;
 }
