@@ -278,7 +278,7 @@ cpShapeSegmentQuery(const cpShape* shape, cpVect a, cpVect b, cpFloat radius, cp
 		info->shape = shape;
 		info->alpha = 0.0;
 		info->normal = cpvnormalize(cpvsub(a, nearest.point));
-		info->point = nearest.point;
+		//info->point = nearest.point;
 	}
 	else
 	{
@@ -648,3 +648,56 @@ cpSegmentShapeSetRadius(cpShape* shape, cpFloat radius)
 	shape->massInfo = cpSegmentShapeMassInfo(shape->massInfo.m, seg->a, seg->b, seg->r);
 	if (mass > 0.0f) cpBodyAccumulateMassFromShapes(shape->body);
 }
+
+
+
+
+static cpBB
+cpBoxShapeCacheData(cpBoxShape* box, cpTransform transform)
+{
+	cpVect ta = cpTransformPoint(transform, box->a);
+	cpVect tb = cpTransformPoint(transform, box->b);
+
+	cpFloat l, r, b, t;
+
+	if (ta.x < tb.x)
+	{
+		l = ta.x;
+		r = tb.x;
+	}
+	else
+	{
+		l = tb.x;
+		r = ta.x;
+	}
+
+	if (ta.y < tb.y)
+	{
+		b = ta.y;
+		t = tb.y;
+	}
+	else
+	{
+		b = tb.y;
+		t = ta.y;
+	}
+	return cpBBNew(l, b, r, t);
+}
+
+static void
+cpBoxShapePointQuery(cpBoxShape* box, cpVect p, cpPointQueryInfo* info)
+{
+	info->shape = (cpShape*)box;
+	info->point = p;
+	info->distance = 0.00f;
+	info->gradient = cpvzero;
+}
+
+//static const cpShapeClass cpBoxShapeClass = 
+//{
+//	CP_BOX_SHAPE,
+//	(cpShapeCacheDataImpl)cpBoxShapeCacheData,
+//	NULL,
+//	(cpShapePointQueryImpl)cpBoxShapePointQuery,
+//	(cpShapeSegmentQueryImpl)cpSegmentShapeSegmentQuery,
+//};

@@ -151,7 +151,9 @@ cpBodyIsSleeping(const cpBody* body)
 cpBodyType
 cpBodyGetType(cpBody* body)
 {
-	if (body->sleeping.idleTime == INFINITY)
+	return body->type;
+
+	/*if (body->sleeping.idleTime == INFINITY)
 	{
 		return CP_BODY_TYPE_STATIC;
 	}
@@ -162,7 +164,7 @@ cpBodyGetType(cpBody* body)
 	else
 	{
 		return CP_BODY_TYPE_DYNAMIC;
-	}
+	}*/
 }
 
 void
@@ -170,6 +172,8 @@ cpBodySetType(cpBody* body, cpBodyType type)
 {
 	cpBodyType oldType = cpBodyGetType(body);
 	if (oldType == type) return;
+
+	body->type = type;
 
 	// Static bodies have their idle timers set to infinity.
 	// Non-static bodies should have their idle timer reset.
@@ -235,7 +239,8 @@ cpBodySetType(cpBody* body, cpBodyType type)
 // Should *only* be called when shapes with mass info are modified, added or removed.
 void cpBodyAccumulateMassFromShapes(cpBody* body)
 {
-	if (body == NULL || cpBodyGetType(body) != CP_BODY_TYPE_DYNAMIC) return;
+	if (body == NULL) return;
+	//if (body == NULL || cpBodyGetType(body) != CP_BODY_TYPE_DYNAMIC) return;
 
 	// Reset the body's mass data.
 	body->m = body->i = 0.0f;
@@ -259,10 +264,24 @@ void cpBodyAccumulateMassFromShapes(cpBody* body)
 			body->m = msum;
 		}
 	}
+	
+	if (cpBodyGetType(body) != CP_BODY_TYPE_DYNAMIC)
+	{
+		body->m = body->i = INFINITY;
+		body->m_inv = body->i_inv = 0.0f;
 
-	// Recalculate the inverses.
-	body->m_inv = 1.0f / body->m;
-	body->i_inv = 1.0f / body->i;
+		body->v = cpvzero;
+		body->w = 0.0f;
+	}
+	else
+	{
+		body->m_inv = 1.0f / body->m;
+		body->i_inv = 1.0f / body->i;
+	}
+
+	//// Recalculate the inverses.
+	//body->m_inv = 1.0f / body->m;
+	//body->i_inv = 1.0f / body->i;
 
 	// Realign the body since the CoG has probably moved.
 	cpBodySetPosition(body, pos);

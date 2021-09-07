@@ -70,6 +70,8 @@ struct cpBody
 	cpFloat w_bias;
 	cpFloat gravity;
 
+	cpBodyType type;
+
 	cpTransform transform;
 };
 
@@ -155,6 +157,7 @@ typedef enum cpShapeType
 	CP_CIRCLE_SHAPE,
 	CP_SEGMENT_SHAPE,
 	CP_POLY_SHAPE,
+	//CP_BOX_SHAPE,
 	CP_NUM_SHAPES
 } cpShapeType;
 
@@ -192,10 +195,10 @@ struct cpShape
 
 	cpDataPointer userData;
 
-	uint8_t material_id;
+	uint8_t unused;
 	uint8_t team_id;
 	uint8_t block_id;
-	uint8_t unused_1;
+	uint8_t material_type;
 
 	uint64_t attached_component_id;
 
@@ -225,6 +228,12 @@ struct cpSegmentShape
 	cpFloat r;
 
 	//cpVect a_tangent, b_tangent;
+};
+
+struct cpBoxShape
+{
+	cpShape shape;
+	cpVect a, b;
 };
 
 struct cpSplittingPlane
@@ -384,10 +393,6 @@ struct cpRotaryLimitJoint
 
 	cpFloat bias;
 	cpFloat jAcc;
-	cpFloat friction;
-
-	cpFloat ratio_a;
-	cpFloat ratio_b;
 };
 
 struct cpRatchetJoint
