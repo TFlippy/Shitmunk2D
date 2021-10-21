@@ -48,6 +48,7 @@ cpBodyInit(cpBody* body, cpFloat mass, cpFloat moment)
 	body->p = cpvzero;
 	body->v = cpvzero;
 	body->f = cpvzero;
+	body->s = cpv(1, 1);
 
 	body->w = 0.0f;
 	body->t = 0.0f;
@@ -264,7 +265,7 @@ void cpBodyAccumulateMassFromShapes(cpBody* body)
 			body->m = msum;
 		}
 	}
-	
+
 	if (cpBodyGetType(body) != CP_BODY_TYPE_DYNAMIC)
 	{
 		body->m = body->i = INFINITY;
@@ -332,7 +333,7 @@ cpBodySetMoment(cpBody* body, cpFloat moment)
 cpVect
 cpBodyGetRotation(const cpBody* body)
 {
-	return cpv(body->transform.a, body->transform.b);
+	return cpv(body->transform_unscaled.a, body->transform_unscaled.b);
 }
 
 void
@@ -426,15 +427,16 @@ cpBodyRemoveConstraint(cpBody* body, cpConstraint* constraint)
 
 // 'p' is the position of the CoG
 static void
-SetTransform(cpBody* body, cpVect p, cpFloat a)
+SetTransform(cpBody* body, cpVect p, cpFloat a, cpVect s)
 {
 	cpVect rot = cpvforangle(a);
 	cpVect c = body->cog;
 
-	body->transform = cpTransformNewTranspose(
+	body->transform_unscaled = cpTransformNewTranspose(
 		rot.x, -rot.y, p.x - (c.x * rot.x - c.y * rot.y),
 		rot.y, rot.x, p.y - (c.x * rot.y + c.y * rot.x)
 	);
+	body->transform = cpTransformMult(body->transform_unscaled, cpTransformScale(s.x, s.y));
 }
 
 static inline cpFloat
@@ -449,17 +451,27 @@ SetAngle(cpBody* body, cpFloat a)
 cpVect
 cpBodyGetPosition(const cpBody* body)
 {
-	return cpTransformPoint(body->transform, cpvzero);
+	return cpTransformPoint(body->transform_unscaled, cpvzero);
 }
 
 void
 cpBodySetPosition(cpBody* body, cpVect position)
 {
 	//cpBodyActivate(body);
-	cpVect p = body->p = cpvadd(cpTransformVect(body->transform, body->cog), position);
+	cpVect p = body->p = cpvadd(cpTransformVect(body->transform_unscaled, body->cog), position);
 	cpAssertSaneBody(body);
 
-	SetTransform(body, p, body->a);
+	SetTransform(body, p, body->a, body->s);
+}
+
+void
+cpBodySetTransform(cpBody* body, cpVect position, cpFloat angle, cpVect scale)
+{
+	cpVect p = body->p = cpvadd(cpTransformVect(body->transform_unscaled, body->cog), position);
+	cpFloat a = body->a = angle;
+	cpVect s = body->s = scale;
+
+	SetTransform(body, p, a, s);
 }
 
 cpVect
@@ -516,7 +528,7 @@ cpBodySetAngle(cpBody* body, cpFloat angle)
 	cpBodyActivate(body);
 	SetAngle(body, angle);
 
-	SetTransform(body, body->p, angle);
+	SetTransform(body, body->p, angle, body->s);
 }
 
 cpFloat
@@ -600,7 +612,7 @@ cpBodyUpdatePosition(cpBody* body, cpFloat dt)
 {
 	cpVect p = body->p = cpvadd(body->p, cpvmult(cpvadd(body->v, body->v_bias), dt));
 	cpFloat a = SetAngle(body, body->a + (body->w + body->w_bias) * dt);
-	SetTransform(body, p, a);
+	SetTransform(body, p, a, body->s);
 
 	body->v_bias = cpvzero;
 	body->w_bias = 0.0f;

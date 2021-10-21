@@ -40,6 +40,7 @@ struct cpBody
 	cpVect p;
 	cpVect v;
 	cpVect f;
+	cpVect s;
 
 	cpEntity owner_entity;
 	cpEntity parent_entity;
@@ -73,6 +74,7 @@ struct cpBody
 	cpBodyType type;
 
 	cpTransform transform;
+	cpTransform transform_unscaled;
 };
 
 enum cpArbiterState

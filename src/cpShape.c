@@ -278,7 +278,7 @@ cpShapeSegmentQuery(const cpShape* shape, cpVect a, cpVect b, cpFloat radius, cp
 		info->shape = shape;
 		info->alpha = 0.0;
 		info->normal = cpvnormalize(cpvsub(a, nearest.point));
-		//info->point = nearest.point;
+		info->point = nearest.point;
 	}
 	else
 	{

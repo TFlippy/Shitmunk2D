@@ -99,6 +99,9 @@ CP_EXPORT cpVect cpBodyGetPosition(const cpBody *body);
 /// Set the position of the body.
 CP_EXPORT void cpBodySetPosition(cpBody *body, cpVect pos);
 
+/// Set the transform of the body.
+CP_EXPORT void cpBodySetTransform(cpBody* body, cpVect position, cpFloat angle, cpVect scale);
+
 /// Get the offset of the center of gravity in body local coordinates.
 CP_EXPORT cpVect cpBodyGetCenterOfGravity(const cpBody *body);
 /// Set the offset of the center of gravity in body local coordinates.
