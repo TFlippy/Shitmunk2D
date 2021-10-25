@@ -49,14 +49,26 @@ cpPolyShapeCacheData(cpPolyShape* poly, cpTransform transform)
 
 	cpMat2x2 mat_normal = cpMat2x2InverseTransposedRaw(transform.a, transform.b, transform.c, transform.d); // (transform);
 
+	//cpFloat det = (transform.a * transform.d - transform.c * transform.b);
+
+	//if (det < 0.00f) offset = 1;
+	//offset = 1;
+
+	cpBool reverse = (transform.a * transform.d) < 0.00f;
+	int offset = reverse ? 1 : 0;
+
 	for (int i = 0; i < count; i++)
 	{
 		cpVect v = cpTransformPoint(transform, src[i].v0);
 		//cpVect n = cpTransformVect(transform, src[i].n);
-		cpVect n = cpMat2x2TransformVect(mat_normal, src[i].n);
+		cpVect n = cpvnormalize(cpMat2x2TransformVect(mat_normal, src[i].n));
 
-		dst[i].v0 = v;
-		dst[i].n = n;
+		//int index = (i - offset + count) % count;
+
+		int index = reverse ? count - i - 1 : i;
+
+		dst[index].v0 = v;
+		dst[(index + offset + count) % count].n = n;
 
 		l = cpfmin(l, v.x);
 		r = cpfmax(r, v.x);
@@ -86,7 +98,7 @@ cpPolyShapePointQuery(cpPolyShape* poly, cpVect p, cpPointQueryInfo* info)
 		cpVect v1 = planes[i].v0;
 		outside = outside || (cpvdot(planes[i].n, cpvsub(p, v1)) > 0.0f);
 
-		cpVect closest = cpClosetPointOnSegment(p, v0, v1);
+		cpVect closest = cpClosestPointOnSegment(p, v0, v1);
 
 		cpFloat dist = cpvdist(p, closest);
 		if (dist < minDist)

@@ -446,7 +446,7 @@ cpSegmentShapeCacheData(cpSegmentShape* seg, cpTransform transform)
 static void
 cpSegmentShapePointQuery(cpSegmentShape* seg, cpVect p, cpPointQueryInfo* info)
 {
-	cpVect closest = cpClosetPointOnSegment(p, seg->ta, seg->tb);
+	cpVect closest = cpClosestPointOnSegment(p, seg->ta, seg->tb);
 
 	cpVect delta = cpvsub(p, closest);
 	cpFloat d = cpvlength(delta);

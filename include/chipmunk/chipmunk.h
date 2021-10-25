@@ -183,7 +183,7 @@ int __count_var__ = cpConvexHull(__count__, __verts__, __verts_var__, NULL, 0.0)
 
 /// Returns the closest point on the line segment ab, to the point p.
 static inline cpVect
-cpClosetPointOnSegment(const cpVect p, const cpVect a, const cpVect b)
+cpClosestPointOnSegment(const cpVect p, const cpVect a, const cpVect b)
 {
 	cpVect delta = cpvsub(a, b);
 	cpFloat t = cpfclamp01(cpvdot(delta, cpvsub(p, b))/cpvlengthsq(delta));
