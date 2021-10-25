@@ -47,10 +47,13 @@ cpPolyShapeCacheData(cpPolyShape* poly, cpTransform transform)
 	cpFloat l = (cpFloat)INFINITY, r = -(cpFloat)INFINITY;
 	cpFloat b = (cpFloat)INFINITY, t = -(cpFloat)INFINITY;
 
+	cpMat2x2 mat_normal = cpMat2x2InverseTransposedRaw(transform.a, transform.b, transform.c, transform.d); // (transform);
+
 	for (int i = 0; i < count; i++)
 	{
 		cpVect v = cpTransformPoint(transform, src[i].v0);
-		cpVect n = cpTransformVect(transform, src[i].n);
+		//cpVect n = cpTransformVect(transform, src[i].n);
+		cpVect n = cpMat2x2TransformVect(mat_normal, src[i].n);
 
 		dst[i].v0 = v;
 		dst[i].n = n;
@@ -154,7 +157,7 @@ cpPolyShapeSegmentQuery(cpPolyShape* poly, cpVect a, cpVect b, cpFloat r2, cpSeg
 }
 
 static void
-SetVerts(cpPolyShape* poly, int count, const cpVect* verts)
+SetVerts(cpPolyShape* poly, int count, const cpVect* verts, cpBool invert)
 {
 	poly->count = count;
 	if (count <= CP_POLY_SHAPE_INLINE_ALLOC)
@@ -171,6 +174,8 @@ SetVerts(cpPolyShape* poly, int count, const cpVect* verts)
 		cpVect a = verts[(i - 1 + count) % count];
 		cpVect b = verts[i];
 		cpVect n = cpvnormalize(cpvrperp(cpvsub(b, a)));
+
+		//if (invert) n = cpvneg(n);
 
 		poly->planes[i + count].v0 = b;
 		poly->planes[i + count].n = n;
@@ -217,7 +222,7 @@ cpPolyShapeInitRaw(cpPolyShape* poly, cpBody* body, int count, const cpVect* ver
 {
 	cpShapeInit((cpShape*)poly, &polyClass, body, cpPolyShapeMassInfo(0.0f, count, verts, radius));
 
-	SetVerts(poly, count, verts);
+	SetVerts(poly, count, verts, cpFalse);
 	poly->r = radius;
 
 	return poly;
@@ -305,17 +310,17 @@ cpPolyShapeSetVerts(cpShape* shape, int count, cpVect* verts, cpTransform transf
 	for (int i = 0; i < count; i++) hullVerts[i] = cpTransformPoint(transform, verts[i]);
 
 	unsigned int hullCount = cpConvexHull(count, hullVerts, hullVerts, NULL, 0.0f);
-	cpPolyShapeSetVertsRaw(shape, hullCount, hullVerts);
+	cpPolyShapeSetVertsRaw(shape, hullCount, hullVerts, cpFalse);
 }
 
 void
-cpPolyShapeSetVertsRaw(cpShape* shape, int count, cpVect* verts)
+cpPolyShapeSetVertsRaw(cpShape* shape, int count, cpVect* verts, cpBool invert)
 {
 	cpAssertHard(shape->klass == &polyClass, "Shape is not a poly shape.");
 	cpPolyShape* poly = (cpPolyShape*)shape;
 	cpPolyShapeDestroy(poly);
 
-	SetVerts(poly, count, verts);
+	SetVerts(poly, count, verts, invert);
 
 	cpFloat mass = shape->massInfo.m;
 	shape->massInfo = cpPolyShapeMassInfo(shape->massInfo.m, count, verts, poly->r);

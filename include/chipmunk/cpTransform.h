@@ -59,6 +59,17 @@ cpTransformInverse(cpTransform t)
 	);
 }
 
+/// Get the inverse of a transform matrix.
+static inline cpTransform
+cpTransformInverseNoTranspose(cpTransform t)
+{
+	cpFloat inv_det = 1.0f / (t.a * t.d - t.c * t.b);
+	return cpTransformNew(
+		t.d * inv_det, -t.c * inv_det, (t.c * t.ty - t.tx * t.d) * inv_det,
+		-t.b * inv_det, t.a * inv_det, (t.tx * t.b - t.a * t.ty) * inv_det
+	);
+}
+
 /// Multiply two transformation matrices.
 static inline cpTransform
 cpTransformMult(cpTransform t1, cpTransform t2)
@@ -193,6 +204,32 @@ cpTransformAxialScale(cpVect axis, cpVect pivot, cpFloat scale)
 		scale * axis.x * axis.x + axis.y * axis.y, A, axis.x * B,
 		A, axis.x * axis.x + scale * axis.y * axis.y, axis.y * B
 	);
+}
+
+static inline cpMat2x2
+cpMat2x2NewTransposed(cpFloat a, cpFloat b, cpFloat c, cpFloat d)
+{
+	cpMat2x2 t = {a, c, b, d};
+	return t;
+}
+
+static inline cpMat2x2
+cpMat2x2InverseTransposedRaw(cpFloat a, cpFloat b, cpFloat c, cpFloat d)
+{
+	cpFloat det_inv = 1.0f / (a * d - c * b);
+	return cpMat2x2NewTransposed(d * det_inv, -b * det_inv, -c * det_inv, a * det_inv);
+}
+
+static inline cpMat2x2
+cpMat2x2InverseTransposed(cpMat2x2 m)
+{
+	return cpMat2x2InverseTransposedRaw(m.a, m.b, m.c, m.d);
+}
+
+static inline cpVect
+cpMat2x2TransformVect(cpMat2x2 m, cpVect v)
+{
+	return cpv(m.a * v.x + m.c * v.y, m.b * v.x + m.d * v.y);
 }
 
 #endif

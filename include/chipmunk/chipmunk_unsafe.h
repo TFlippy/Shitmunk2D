@@ -55,7 +55,7 @@ CP_EXPORT void cpSegmentShapeSetRadius(cpShape *shape, cpFloat radius);
 
 /// Set the vertexes of a poly shape.
 CP_EXPORT void cpPolyShapeSetVerts(cpShape *shape, int count, cpVect *verts, cpTransform transform);
-CP_EXPORT void cpPolyShapeSetVertsRaw(cpShape *shape, int count, cpVect *verts);
+CP_EXPORT void cpPolyShapeSetVertsRaw(cpShape *shape, int count, cpVect *verts, cpBool invert);
 /// Set the radius of a poly shape.
 CP_EXPORT void cpPolyShapeSetRadius(cpShape *shape, cpFloat radius);
 

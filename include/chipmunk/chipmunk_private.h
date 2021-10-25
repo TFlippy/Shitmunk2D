@@ -146,6 +146,8 @@ cpShapeFilterReject(cpShapeFilter a, cpShapeFilter b)
 {
 	// Reject the collision if:
 	return ((a.group != 0 && a.group == b.group) || ((a.categories & b.mask) == 0 && (b.categories & a.mask) == 0));
+	//return ((a.group != 0 || b.group != 0) && (a.group == 0 || b.group == 0)) || ((a.group != 0 && a.group == b.group) || ((a.categories & b.mask) == 0 && (b.categories & a.mask) == 0));
+	//return ((a.group && ~b.group) || (~a.group && b.group)) || ((a.group != 0 && a.group == b.group) || ((a.categories & b.mask) == 0 && (b.categories & a.mask) == 0));
 }
 
 void cpLoopIndexes(const cpVect *verts, int count, int *start, int *end);
