@@ -250,11 +250,15 @@ void cpBodyAccumulateMassFromShapes(cpBody* body)
 	// Cache the position to realign it at the end.
 	cpVect pos = cpBodyGetPosition(body);
 
+	cpBB bb = {pos.x, pos.y, pos.x, pos.y};
+
 	// Accumulate mass from shapes.
 	CP_BODY_FOREACH_SHAPE(body, shape)
 	{
 		struct cpShapeMassInfo* info = &shape->massInfo;
 		cpFloat m = info->m;
+
+		bb = cpBBMerge(bb, shape->bb);
 
 		if (m > 0.0f)
 		{
@@ -279,6 +283,8 @@ void cpBodyAccumulateMassFromShapes(cpBody* body)
 		body->m_inv = 1.0f / body->m;
 		body->i_inv = 1.0f / body->i;
 	}
+
+	body->bb = cpBBOffset(bb, cpvneg(pos));
 
 	//// Recalculate the inverses.
 	//body->m_inv = 1.0f / body->m;
@@ -627,9 +633,21 @@ cpBodyLocalToWorld(const cpBody* body, const cpVect point)
 }
 
 cpVect
+cpBodyLocalToWorldUnscaled(const cpBody* body, const cpVect point)
+{
+	return cpTransformPoint(body->transform_unscaled, point);
+}
+
+cpVect
 cpBodyWorldToLocal(const cpBody* body, const cpVect point)
 {
 	return cpTransformPoint(cpTransformRigidInverse(body->transform), point);
+}
+
+cpVect
+cpBodyWorldToLocalUnscaled(const cpBody* body, const cpVect point)
+{
+	return cpTransformPoint(cpTransformRigidInverse(body->transform_unscaled), point);
 }
 
 void

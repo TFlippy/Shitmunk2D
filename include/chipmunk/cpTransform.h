@@ -154,9 +154,10 @@ cpTransformRigid(cpVect translate, cpFloat radians)
 static inline cpTransform
 cpTransformRigidInverse(cpTransform t)
 {
+	cpFloat inv_det = 1.0f / (t.a * t.d - t.c * t.b);
 	return cpTransformNewTranspose(
-		t.d, -t.c, (t.c * t.ty - t.tx * t.d),
-		-t.b, t.a, (t.tx * t.b - t.a * t.ty)
+		t.d * inv_det, -t.c * inv_det, (t.c * t.ty - t.tx * t.d) * inv_det,
+		-t.b * inv_det, t.a * inv_det, (t.tx * t.b - t.a * t.ty) * inv_det
 	);
 }
 

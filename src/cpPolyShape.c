@@ -47,12 +47,7 @@ cpPolyShapeCacheData(cpPolyShape* poly, cpTransform transform)
 	cpFloat l = (cpFloat)INFINITY, r = -(cpFloat)INFINITY;
 	cpFloat b = (cpFloat)INFINITY, t = -(cpFloat)INFINITY;
 
-	cpMat2x2 mat_normal = cpMat2x2InverseTransposedRaw(transform.a, transform.b, transform.c, transform.d); // (transform);
-
-	//cpFloat det = (transform.a * transform.d - transform.c * transform.b);
-
-	//if (det < 0.00f) offset = 1;
-	//offset = 1;
+	cpMat2x2 mat_normal = cpMat2x2InverseTransposedRaw(transform.a, transform.b, transform.c, transform.d);
 
 	cpBool reverse = (transform.a * transform.d) < 0.00f;
 	int offset = reverse ? 1 : 0;
@@ -60,10 +55,7 @@ cpPolyShapeCacheData(cpPolyShape* poly, cpTransform transform)
 	for (int i = 0; i < count; i++)
 	{
 		cpVect v = cpTransformPoint(transform, src[i].v0);
-		//cpVect n = cpTransformVect(transform, src[i].n);
 		cpVect n = cpvnormalize(cpMat2x2TransformVect(mat_normal, src[i].n));
-
-		//int index = (i - offset + count) % count;
 
 		int index = reverse ? count - i - 1 : i;
 

@@ -153,8 +153,12 @@ CP_EXPORT void cpBodyUpdatePosition(cpBody *body, cpFloat dt);
 
 /// Convert body relative/local coordinates to absolute/world coordinates.
 CP_EXPORT cpVect cpBodyLocalToWorld(const cpBody *body, const cpVect point);
+/// Convert body relative/local coordinates to absolute/world coordinates.
+CP_EXPORT cpVect cpBodyLocalToWorldUnscaled(const cpBody* body, const cpVect point);
 /// Convert body absolute/world coordinates to  relative/local coordinates.
-CP_EXPORT cpVect cpBodyWorldToLocal(const cpBody *body, const cpVect point);
+CP_EXPORT cpVect cpBodyWorldToLocal(const cpBody* body, const cpVect point);
+/// Convert body absolute/world coordinates to  relative/local coordinates.
+CP_EXPORT cpVect cpBodyWorldToLocalUnscaled(const cpBody *body, const cpVect point);
 
 /// Apply a force to a body. Both the force and point are expressed in world coordinates.
 CP_EXPORT void cpBodyApplyForceAtWorldPoint(cpBody *body, cpVect force, cpVect point);

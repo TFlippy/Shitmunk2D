@@ -411,9 +411,12 @@ cpSegmentShapeAlloc(void)
 static cpBB
 cpSegmentShapeCacheData(cpSegmentShape* seg, cpTransform transform)
 {
-	seg->ta = cpTransformPoint(transform, seg->a);
-	seg->tb = cpTransformPoint(transform, seg->b);
-	seg->tn = cpTransformVect(transform, seg->n);
+	cpBool reverse = (transform.a * transform.d) < 0.00f;
+	cpMat2x2 mat_normal = cpMat2x2InverseTransposedRaw(transform.a, transform.b, transform.c, transform.d);
+
+	seg->ta = cpTransformPoint(transform, reverse ? seg->b : seg->a);
+	seg->tb = cpTransformPoint(transform, reverse ? seg->a : seg->b);
+	seg->tn = cpvnormalize(cpMat2x2TransformVect(mat_normal, seg->n));
 
 	cpFloat l, r, b, t;
 

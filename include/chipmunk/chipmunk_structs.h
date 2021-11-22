@@ -42,6 +42,8 @@ struct cpBody
 	cpVect f;
 	cpVect s;
 
+	cpBB bb;
+
 	cpEntity owner_entity;
 	cpEntity parent_entity;
 
@@ -72,6 +74,11 @@ struct cpBody
 	cpFloat gravity;
 
 	cpBodyType type;
+
+	uint8_t faction_id;
+	uint8_t player_id;
+	uint8_t unused_00;
+	uint8_t unused_01;
 
 	cpTransform transform;
 	cpTransform transform_unscaled;
@@ -197,8 +204,8 @@ struct cpShape
 
 	cpDataPointer userData;
 
-	uint8_t unused;
-	uint8_t team_id;
+	uint8_t unused_00;
+	uint8_t unused_01;
 	uint8_t block_id;
 	uint8_t material_type;
 
