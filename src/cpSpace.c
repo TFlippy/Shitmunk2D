@@ -446,7 +446,7 @@ cpSpaceAddShape(cpSpace* space, cpShape* shape)
 	cpAssertHard(shape->space != space, "You have already added this shape to this space. You must not add it a second time.");
 	cpAssertHard(!shape->space, "You have already added this shape to another space. You cannot add it to a second.");
 	cpAssertHard(shape->body, "The shape's body is not defined.");
-	cpAssertHard(shape->body->space == space, "The shape's body must be added to the space before the shape.");
+	//cpAssertHard(shape->body->space == space, "The shape's body must be added to the space before the shape.");
 	cpAssertSpaceUnlocked(space);
 
 	cpBody* body = shape->body;
@@ -488,7 +488,7 @@ cpSpaceAddConstraint(cpSpace* space, cpConstraint* constraint)
 
 	cpBody* a = constraint->a, * b = constraint->b;
 	cpAssertHard(a != NULL && b != NULL, "Constraint is attached to a NULL body.");
-	cpAssertHard(a->space == space && b->space == space, "The constraint's bodies must be added to the space before the constraint.");
+	//cpAssertHard(a->space == space && b->space == space, "The constraint's bodies must be added to the space before the constraint.");
 
 	if (a != b && a != NULL && b != NULL)
 	{
@@ -552,7 +552,7 @@ cpSpaceFilterArbiters(cpSpace* space, cpBody* body, cpShape* filter)
 	{
 		struct arbiterFilterContext context = {space, body, filter};
 		cpHashSetFilter(space->cachedArbiters, (cpHashSetFilterFunc)cachedArbitersFilter, &context);
-	} 
+	}
 	cpSpaceUnlock(space, cpTrue);
 }
 
@@ -723,13 +723,16 @@ cpSpaceReindexStatic(cpSpace* space)
 void
 cpSpaceReindexShape(cpSpace* space, cpShape* shape)
 {
-	cpAssertHard(!space->locked, "You cannot manually reindex objects while the space is locked. Wait until the current query or step is complete.");
+	if (shape != NULL && shape->space != NULL)
+	{
+		cpAssertHard(!space->locked, "You cannot manually reindex objects while the space is locked. Wait until the current query or step is complete.");
 
-	cpShapeCacheBB(shape);
+		cpShapeCacheBB(shape);
 
-	// attempt to rehash the shape in both hashes
-	cpSpatialIndexReindexObject(space->dynamicShapes, shape, shape->hashid);
-	cpSpatialIndexReindexObject(space->staticShapes, shape, shape->hashid);
+		// attempt to rehash the shape in both hashes
+		cpSpatialIndexReindexObject(space->dynamicShapes, shape, shape->hashid);
+		cpSpatialIndexReindexObject(space->staticShapes, shape, shape->hashid);
+	}
 }
 
 void

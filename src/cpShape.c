@@ -101,11 +101,10 @@ cpFloat cpShapeGetMass(cpShape* shape)
 void
 cpShapeSetMass(cpShape* shape, cpFloat mass)
 {
-	cpBody* body = shape->body;
-	cpBodyActivate(body);
-
+	//cpBody* body = shape->body;
+	//cpBodyActivate(body);
 	shape->massInfo.m = mass;
-	cpBodyAccumulateMassFromShapes(body);
+	//cpBodyAccumulateMassFromShapes(body);
 }
 
 cpFloat cpShapeGetDensity(cpShape* shape)

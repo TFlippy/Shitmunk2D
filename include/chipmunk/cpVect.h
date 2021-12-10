@@ -68,6 +68,11 @@ static inline cpVect cpvmult(const cpVect v, const cpFloat s)
 	return cpv(v.x * s, v.y * s);
 }
 
+static inline cpVect cpvmult2(const cpVect v1, const cpVect v2)
+{
+	return cpv(v1.x * v2.x, v1.y * v2.y);
+}
+
 /// Vector dot product.
 static inline cpFloat cpvdot(const cpVect v1, const cpVect v2)
 {

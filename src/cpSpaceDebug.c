@@ -29,7 +29,7 @@ cpSpaceDebugDrawShape(cpShape* shape, cpSpaceDebugDrawOptions* options)
 	cpBody* body = shape->body;
 	cpDataPointer data = options->data;
 
-	cpSpaceDebugColor outline_color = options->shapeOutlineColor;
+	cpSpaceDebugColor outline_color = options->colorForShape(shape, data);
 	cpSpaceDebugColor fill_color = options->colorForShape(shape, data);
 
 	switch (shape->klass->type)
@@ -54,11 +54,11 @@ cpSpaceDebugDrawShape(cpShape* shape, cpSpaceDebugDrawOptions* options)
 		struct cpSplittingPlane* planes = poly->planes;
 		cpVect* verts = (cpVect*)alloca(count * sizeof(cpVect));
 
-		for (int i = 0; i < count; i++)
-		{
-			options->drawSegment(planes[i].v0, planes[i].v0 + planes[i].n, outline_color, data);
-			//options->drawSegment(planes[i].v0, planes[i].v0 + planes[i + count].n, fill_color, data);
-		}
+		//for (int i = 0; i < count; i++)
+		//{
+		//	options->drawSegment(planes[i].v0, planes[i].v0 + planes[i].n, outline_color, data);
+		//	//options->drawSegment(planes[i].v0, planes[i].v0 + planes[i + count].n, fill_color, data);
+		//}
 
 		for (int i = 0; i < count; i++) verts[i] = planes[i].v0;
 		options->drawPolygon(count, verts, poly->r, outline_color, fill_color, data);

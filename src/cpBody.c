@@ -252,22 +252,30 @@ void cpBodyAccumulateMassFromShapes(cpBody* body)
 
 	cpBB bb = {pos.x, pos.y, pos.x, pos.y};
 
-	// Accumulate mass from shapes.
-	CP_BODY_FOREACH_SHAPE(body, shape)
+	if (body->shapeList != NULL && body->space != NULL)
 	{
-		struct cpShapeMassInfo* info = &shape->massInfo;
-		cpFloat m = info->m;
-
-		bb = cpBBMerge(bb, shape->bb);
-
-		if (m > 0.0f)
+		// Accumulate mass from shapes.
+		CP_BODY_FOREACH_SHAPE(body, shape)
 		{
-			cpFloat msum = body->m + m;
+			struct cpShapeMassInfo* info = &shape->massInfo;
+			cpFloat m = info->m;
 
-			body->i += m * info->i + cpvdistsq(body->cog, info->cog) * (m * body->m) / msum;
-			body->cog = cpvlerp(body->cog, info->cog, m / msum);
-			body->m = msum;
+			bb = cpBBMerge(bb, shape->bb);
+
+			if (m > 0.0f)
+			{
+				cpFloat msum = body->m + m;
+
+				body->i += m * info->i + cpvdistsq(body->cog, info->cog) * (m * body->m) / msum;
+				body->cog = cpvlerp(body->cog, info->cog, m / msum);
+				body->m = msum;
+			}
 		}
+	}
+	else
+	{
+		body->m = 1.00f;
+		body->i = 1.00f;
 	}
 
 	if (cpBodyGetType(body) != CP_BODY_TYPE_DYNAMIC)
@@ -283,6 +291,9 @@ void cpBodyAccumulateMassFromShapes(cpBody* body)
 		body->m_inv = 1.0f / body->m;
 		body->i_inv = 1.0f / body->i;
 	}
+
+	//body->cog.x *= body->s.x;
+	//body->cog.y *= body->s.y;
 
 	body->bb = cpBBOffset(bb, cpvneg(pos));
 
@@ -437,6 +448,8 @@ SetTransform(cpBody* body, cpVect p, cpFloat a, cpVect s)
 {
 	cpVect rot = cpvforangle(a);
 	cpVect c = body->cog;
+	//c.x *= s.x;
+	//c.y *= s.y;
 
 	body->transform_unscaled = cpTransformNewTranspose(
 		rot.x, -rot.y, p.x - (c.x * rot.x - c.y * rot.y),

@@ -130,7 +130,7 @@ ComponentRoot(cpBody* body)
 void
 cpBodyActivate(cpBody* body)
 {
-	if (body != NULL && cpBodyGetType(body) == CP_BODY_TYPE_DYNAMIC)
+	if (body != NULL && body->space != NULL && cpBodyGetType(body) == CP_BODY_TYPE_DYNAMIC)
 	{
 		body->sleeping.idleTime = 0.0f;
 
@@ -170,17 +170,20 @@ cpBodyActivate(cpBody* body)
 void
 cpBodyActivateStatic(cpBody* body, cpShape* filter)
 {
-	cpAssertHard(cpBodyGetType(body) == CP_BODY_TYPE_STATIC, "cpBodyActivateStatic() called on a non-static body.");
-
-	CP_BODY_FOREACH_ARBITER(body, arb)
+	if (body->space != NULL)
 	{
-		if (!filter || filter == arb->a || filter == arb->b)
-		{
-			cpBodyActivate(arb->body_a == body ? arb->body_b : arb->body_a);
-		}
-	}
+		cpAssertHard(cpBodyGetType(body) == CP_BODY_TYPE_STATIC, "cpBodyActivateStatic() called on a non-static body.");
 
-	// TODO: should also activate joints?
+		CP_BODY_FOREACH_ARBITER(body, arb)
+		{
+			if (!filter || filter == arb->a || filter == arb->b)
+			{
+				cpBodyActivate(arb->body_a == body ? arb->body_b : arb->body_a);
+			}
+		}
+
+		// TODO: should also activate joints?
+	}
 }
 
 static inline void
