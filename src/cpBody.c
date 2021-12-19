@@ -56,6 +56,8 @@ cpBodyInit(cpBody* body, cpFloat mass, cpFloat moment)
 	body->v_bias = cpvzero;
 	body->w_bias = 0.0f;
 
+	body->max_velocity = 50.00f;
+
 	body->gravity = 1.00f;
 
 	body->owner_entity = NULL;
@@ -612,7 +614,7 @@ cpBodyUpdateVelocity(cpBody* body, cpVect gravity, cpFloat damping_v, cpFloat da
 
 	//cpVect v_add = cpvmult(cpvadd(cpvmult(gravity, body->gravity * body->m), body->f), (dt * body->m_inv));
 
-	body->v = cpvadd(cpvmult(body->v, damping_v), cpvmult(cpvadd(gravity * body->gravity, cpvmult(body->f, body->m_inv)), dt));
+	body->v = cpvclamp(cpvadd(cpvmult(body->v, damping_v), cpvmult(cpvadd(gravity * body->gravity, cpvmult(body->f, body->m_inv)), dt)), body->max_velocity);
 	//body->v = cpvadd(body->v, v_add);
 	body->w = body->w * damping_w + body->t * body->i_inv * dt;
 

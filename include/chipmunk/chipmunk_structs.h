@@ -72,6 +72,7 @@ struct cpBody
 
 	cpFloat w_bias;
 	cpFloat gravity;
+	cpFloat max_velocity;
 
 	cpBodyType type;
 
