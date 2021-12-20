@@ -36,6 +36,8 @@ typedef void (*cpCollisionPostSolveFunc)(cpArbiter* arb, cpSpace* space, cpDataP
 /// Collision separate event function callback type.
 typedef void (*cpCollisionSeparateFunc)(cpArbiter* arb, cpSpace* space, cpDataPointer userData);
 
+typedef void (*cpImpactFunc)(cpBody* body, cpSpace* space, cpDataPointer userData);
+
 /// Struct that holds function callback pointers to configure custom collision handling.
 /// Collision handlers have a pair of types; when a collision occurs between two shapes that have these types, the collision handler functions are triggered.
 struct cpCollisionHandler

@@ -33,6 +33,24 @@ struct cpArray
 	void** arr;
 };
 
+struct cpImpact
+{
+	cpVect p;
+	cpVect n;
+
+	cpFloat size;
+	cpFloat ke;
+	cpFloat bounce;
+	cpFloat bounce_rigid;
+
+	cpTimestamp stamp;
+
+	uint8_t dirty;
+	uint8_t material_type_a;
+	uint8_t material_type_b;
+	uint8_t unused;
+};
+
 struct cpBody
 {
 	cpVect cog;
@@ -83,6 +101,8 @@ struct cpBody
 
 	cpTransform transform;
 	cpTransform transform_unscaled;
+
+	cpImpact impact;
 };
 
 enum cpArbiterState
@@ -110,6 +130,7 @@ struct cpContact
 	cpVect r1, r2;
 
 	cpFloat nMass, tMass;
+	cpFloat bounce_rigid;
 	cpFloat bounce; // TODO: look for an alternate bounce solution.
 
 	cpFloat jnAcc, jtAcc, jBias;
@@ -483,6 +504,8 @@ struct cpSpace
 	cpBool usesWildcards;
 	cpHashSet* collisionHandlers;
 	cpCollisionHandler defaultHandler;
+
+	cpImpactFunc impactFunc;
 
 	cpBool skipPostStep;
 	cpArray* postStepCallbacks;

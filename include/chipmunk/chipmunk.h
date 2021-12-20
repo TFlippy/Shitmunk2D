@@ -86,6 +86,7 @@ CP_EXPORT void cpMessage(const char *condition, const char *file, int line, int 
 typedef struct cpArray cpArray;
 typedef struct cpHashSet cpHashSet;
 
+typedef struct cpImpact cpImpact;
 typedef struct cpBody cpBody;
 
 typedef struct cpShape cpShape;

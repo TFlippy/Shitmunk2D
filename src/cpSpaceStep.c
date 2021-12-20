@@ -368,6 +368,7 @@ cpSpaceStep(cpSpace* space, cpFloat dt)
 	if (dt == 0.0f) return;
 
 	space->stamp++;
+	cpTimestamp stamp = space->stamp;
 
 	cpFloat prev_dt = space->curr_dt;
 	space->curr_dt = dt;
@@ -441,6 +442,21 @@ cpSpaceStep(cpSpace* space, cpFloat dt)
 		{
 			cpBody* body = (cpBody*)bodies->arr[i];
 			cpBodyUpdateVelocity(body, gravity, damping, damping_w, dt);
+
+			if (body->impact.dirty)
+			{
+				if (space->impactFunc != NULL) space->impactFunc(body, space, space->userData);
+				
+				body->impact.p = cpvzero;
+				body->impact.n = cpvzero;
+
+				body->impact.size = 0.00f;
+				body->impact.ke = 0.00f;
+				body->impact.bounce = 0.00f;
+				body->impact.bounce_rigid = 0.00f;
+
+				body->impact.dirty = 0;
+			}
 		}
 
 		// Apply cached impulses
@@ -487,6 +503,89 @@ cpSpaceStep(cpSpace* space, cpFloat dt)
 
 			cpCollisionHandler* handler = arb->handler;
 			handler->postSolveFunc(arb, space, handler->userData);
+
+			if (arb->state == CP_ARBITER_STATE_FIRST_COLLISION)
+			{
+				cpFloat eCoef = (1 - arb->e) / (1 + arb->e);
+				cpFloat sum = 0.00f;
+				cpFloat bounce = 0.00f;
+				cpFloat bounce_rigid = 0.00f;
+
+				cpVect pos = cpvzero;
+
+				cpBool swapped = arb->swapped;
+				cpVect n = swapped ? cpvneg(arb->n) : arb->n;
+
+				int count = arb->count;
+
+				struct cpContact* contacts = arb->contacts;
+				for (int i = 0; i < count; i++)
+				{
+					struct cpContact* con = &contacts[i];
+					cpFloat jnAcc = con->jnAcc;
+					cpFloat jtAcc = con->jtAcc;
+					cpVect p1 = cpvadd(arb->body_a->p, arb->contacts[i].r1);
+					cpVect p2 = cpvadd(arb->body_b->p, arb->contacts[i].r2);
+
+					sum += eCoef * jnAcc * jnAcc / con->nMass + jtAcc * jtAcc / con->tMass;				
+					bounce += con->bounce;
+					bounce_rigid += cpfabs(con->bounce_rigid);
+					pos = cpvadd(pos, cpvmult(cpvadd(p1, p2), 0.50f));
+				}
+
+				//cpVect rv = cpvsub(arb->body_a->v, arb->body_b->v);
+				pos = cpvmult(pos, 1.00f / count);
+
+				if (arb->body_a->type == CP_BODY_TYPE_DYNAMIC)
+				{
+					cpImpact* imp = &arb->body_a->impact;
+					imp->p = cpvadd(imp->p, pos);
+					imp->n = cpvadd(imp->n, n);
+					imp->bounce_rigid += bounce_rigid;
+
+					if (imp->dirty)
+					{
+						imp->p = cpvmult(imp->p, 0.50f);
+						imp->n = cpvmult(imp->n, 0.50f);
+						imp->bounce_rigid *= 0.50f;
+					}
+					else
+					{
+						imp->material_type_a = arb->a->material_type;
+						imp->material_type_b = arb->b->material_type;
+					}
+
+					imp->bounce += bounce;
+					imp->ke += sum;
+					imp->dirty = 1;
+					imp->stamp = stamp;
+				}
+
+				if (arb->body_b->type == CP_BODY_TYPE_DYNAMIC)
+				{
+					cpImpact* imp = &arb->body_b->impact;
+					imp->p = cpvadd(imp->p, pos);
+					imp->n = cpvadd(imp->n, n);
+					imp->bounce_rigid += bounce_rigid;
+
+					if (imp->dirty)
+					{
+						imp->p = cpvmult(imp->p, 0.50f);
+						imp->n = cpvmult(imp->n, 0.50f);
+						imp->bounce_rigid *= 0.50f;
+					}
+					else
+					{
+						imp->material_type_a = arb->b->material_type;
+						imp->material_type_b = arb->a->material_type;
+					}
+
+					imp->bounce += bounce;
+					imp->ke += sum;
+					imp->dirty = 1;
+					imp->stamp = stamp;
+				}
+			}
 		}
 	}
 	cpSpaceUnlock(space, cpTrue);

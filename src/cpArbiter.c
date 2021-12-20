@@ -449,7 +449,8 @@ cpArbiterPreStep(cpArbiter* arb, cpFloat dt, cpFloat slop, cpFloat bias)
 		con->jBias = 0.0f;
 
 		// Calculate the target bounce velocity.
-		con->bounce = normal_relative_velocity(a, b, con->r1, con->r2, n) * arb->e;
+		con->bounce_rigid = normal_relative_velocity(a, b, con->r1, con->r2, n);
+		con->bounce = con->bounce_rigid * arb->e;
 	}
 }
 
