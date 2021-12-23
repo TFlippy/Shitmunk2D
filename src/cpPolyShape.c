@@ -153,7 +153,7 @@ cpPolyShapeSegmentQuery(cpPolyShape* poly, cpVect a, cpVect b, cpFloat r2, cpSeg
 	{
 		for (int i = 0; i < count; i++)
 		{
-			cpSegmentQueryInfo circle_info = {NULL, b, cpvzero, 1.0f};
+			cpSegmentQueryInfo circle_info = { NULL, b, cpvzero, 1.0f };
 			CircleSegmentQuery(&poly->shape, planes[i].v0, r, a, b, r2, &circle_info);
 			if (circle_info.alpha < info->alpha) (*info) = circle_info;
 		}

@@ -66,7 +66,7 @@ cpSpaceActivateBody(cpSpace* space, cpBody* body)
 
 				// Reinsert the arbiter into the arbiter cache
 				const cpShape* a = arb->a, * b = arb->b;
-				const cpShape* shape_pair[] = {a, b};
+				const cpShape* shape_pair[] = { a, b };
 				cpHashValue arbHashID = CP_HASH_PAIR((cpHashValue)a, (cpHashValue)b);
 				cpHashSetInsert(space->cachedArbiters, arbHashID, shape_pair, NULL, arb);
 
@@ -250,7 +250,7 @@ cpSpaceProcessComponents(cpSpace* space, cpFloat dt)
 	cpBool sleep = (space->sleepTimeThreshold != INFINITY);
 	cpArray* bodies = space->dynamicBodies;
 
-	#ifndef NDEBUG
+#ifndef NDEBUG
 	for (int i = 0; i < bodies->num; i++)
 	{
 		cpBody* body = (cpBody*)bodies->arr[i];
@@ -258,7 +258,7 @@ cpSpaceProcessComponents(cpSpace* space, cpFloat dt)
 		cpAssertSoft(body->sleeping.next == NULL, "Internal Error: Dangling next pointer detected in contact graph.");
 		cpAssertSoft(body->sleeping.root == NULL, "Internal Error: Dangling root pointer detected in contact graph.");
 	}
-	#endif
+#endif
 
 	// Calculate the kinetic energy of all the bodies.
 	if (sleep)

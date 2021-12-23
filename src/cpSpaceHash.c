@@ -346,7 +346,7 @@ static void eachHelper(cpHandle* hand, eachContext* context)
 static void
 cpSpaceHashEach(cpSpaceHash* hash, cpSpatialIndexIteratorFunc func, void* data)
 {
-	eachContext context = {func, data};
+	eachContext context = { func, data };
 	cpHashSetEach(hash->handleSet, (cpHashSetIteratorFunc)eachHelper, &context);
 }
 
@@ -381,7 +381,7 @@ remove_orphaned_handles(cpSpaceHash* hash, cpSpaceHashBin** bin_ptr)
 static inline void
 query_helper(cpSpaceHash* hash, cpSpaceHashBin** bin_ptr, void* obj, cpSpatialIndexQueryFunc func, void* data)
 {
-	restart:
+restart:
 	for (cpSpaceHashBin* bin = *bin_ptr; bin; bin = bin->next)
 	{
 		cpHandle* hand = bin->handle;
@@ -488,7 +488,7 @@ cpSpaceHashReindexQuery(cpSpaceHash* hash, cpSpatialIndexQueryFunc func, void* d
 {
 	clearTable(hash);
 
-	queryRehashContext context = {hash, func, data};
+	queryRehashContext context = { hash, func, data };
 	cpHashSetEach(hash->handleSet, (cpHashSetIteratorFunc)queryRehash_helper, &context);
 
 	cpSpatialIndexCollideStatic((cpSpatialIndex*)hash, hash->spatialIndex.staticIndex, func, data);
@@ -499,7 +499,7 @@ segmentQuery_helper(cpSpaceHash* hash, cpSpaceHashBin** bin_ptr, void* obj, cpSp
 {
 	cpFloat t = 1.0f;
 
-	restart:
+restart:
 	for (cpSpaceHashBin* bin = *bin_ptr; bin; bin = bin->next)
 	{
 		cpHandle* hand = bin->handle;

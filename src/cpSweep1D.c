@@ -54,14 +54,14 @@ BoundsOverlap(Bounds a, Bounds b)
 static inline Bounds
 BBToBounds(cpSweep1D* sweep, cpBB bb)
 {
-	Bounds bounds = {bb.l, bb.r};
+	Bounds bounds = { bb.l, bb.r };
 	return bounds;
 }
 
 static inline TableCell
 MakeTableCell(cpSweep1D* sweep, void* obj)
 {
-	TableCell cell = {obj, BBToBounds(sweep, sweep->spatialIndex.bbfunc(obj))};
+	TableCell cell = { obj, BBToBounds(sweep, sweep->spatialIndex.bbfunc(obj)) };
 	return cell;
 }
 

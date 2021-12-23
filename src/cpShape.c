@@ -242,7 +242,7 @@ cpShapeUpdate(cpShape* shape, cpTransform transform)
 cpFloat
 cpShapePointQuery(const cpShape* shape, cpVect p, cpPointQueryInfo* info)
 {
-	cpPointQueryInfo blank = {NULL, cpvzero, INFINITY, cpvzero};
+	cpPointQueryInfo blank = { NULL, cpvzero, INFINITY, cpvzero };
 	if (info)
 	{
 		(*info) = blank;
@@ -260,7 +260,7 @@ cpShapePointQuery(const cpShape* shape, cpVect p, cpPointQueryInfo* info)
 cpBool
 cpShapeSegmentQuery(const cpShape* shape, cpVect a, cpVect b, cpFloat radius, cpSegmentQueryInfo* info)
 {
-	cpSegmentQueryInfo blank = {NULL, b, cpvzero, 1.0f};
+	cpSegmentQueryInfo blank = { NULL, b, cpvzero, 1.0f };
 	if (info)
 	{
 		(*info) = blank;
@@ -496,8 +496,8 @@ cpSegmentShapeSegmentQuery(cpSegmentShape* seg, cpVect a, cpVect b, cpFloat r2, 
 	}
 	else if (r != 0.0f)
 	{
-		cpSegmentQueryInfo info1 = {NULL, b, cpvzero, 1.0f};
-		cpSegmentQueryInfo info2 = {NULL, b, cpvzero, 1.0f};
+		cpSegmentQueryInfo info1 = { NULL, b, cpvzero, 1.0f };
+		cpSegmentQueryInfo info2 = { NULL, b, cpvzero, 1.0f };
 		CircleSegmentQuery((cpShape*)seg, seg->ta, seg->r, a, b, r2, &info1);
 		CircleSegmentQuery((cpShape*)seg, seg->tb, seg->r, a, b, r2, &info2);
 

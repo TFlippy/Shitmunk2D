@@ -66,7 +66,7 @@ cpSpatialIndexCollideStatic(cpSpatialIndex* dynamicIndex, cpSpatialIndex* static
 {
 	if (staticIndex && cpSpatialIndexCount(staticIndex) > 0)
 	{
-		dynamicToStaticContext context = {dynamicIndex->bbfunc, staticIndex, func, data};
+		dynamicToStaticContext context = { dynamicIndex->bbfunc, staticIndex, func, data };
 		cpSpatialIndexEach(dynamicIndex, (cpSpatialIndexIteratorFunc)dynamicToStaticIter, &context);
 	}
 }

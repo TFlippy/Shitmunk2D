@@ -252,7 +252,7 @@ void cpBodyAccumulateMassFromShapes(cpBody* body)
 	// Cache the position to realign it at the end.
 	cpVect pos = cpBodyGetPosition(body);
 
-	cpBB bb = {pos.x, pos.y, pos.x, pos.y};
+	cpBB bb = { pos.x, pos.y, pos.x, pos.y };
 
 	if (body->shapeList != NULL && body->space != NULL)
 	{

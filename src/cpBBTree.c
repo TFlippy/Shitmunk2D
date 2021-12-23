@@ -235,7 +235,7 @@ PairInsert(Node* a, Node* b, cpBBTree* tree)
 {
 	Pair* nextA = a->PAIRS, * nextB = b->PAIRS;
 	Pair* pair = PairFromPool(tree);
-	Pair temp = {{NULL, a, nextA},{NULL, b, nextB}, 0};
+	Pair temp = { {NULL, a, nextA},{NULL, b, nextB}, 0 };
 
 	a->PAIRS = b->PAIRS = pair;
 	*pair = temp;
@@ -618,14 +618,14 @@ LeafAddPairs(Node* leaf, cpBBTree* tree)
 		if (dynamicRoot)
 		{
 			cpBBTree* dynamicTree = GetTree(dynamicIndex);
-			MarkContext context = {dynamicTree, NULL, NULL, NULL};
+			MarkContext context = { dynamicTree, NULL, NULL, NULL };
 			MarkLeafQuery(dynamicRoot, leaf, cpTrue, &context);
 		}
 	}
 	else
 	{
 		Node* staticRoot = GetRootIfTree(tree->spatialIndex.staticIndex);
-		MarkContext context = {tree, staticRoot, VoidQueryFunc, NULL};
+		MarkContext context = { tree, staticRoot, VoidQueryFunc, NULL };
 		MarkLeaf(leaf, &context);
 	}
 }
@@ -744,7 +744,7 @@ cpBBTreeReindexQuery(cpBBTree* tree, cpSpatialIndexQueryFunc func, void* data)
 	cpSpatialIndex* staticIndex = tree->spatialIndex.staticIndex;
 	Node* staticRoot = (staticIndex && staticIndex->klass == Klass() ? ((cpBBTree*)staticIndex)->root : NULL);
 
-	MarkContext context = {tree, staticRoot, func, data};
+	MarkContext context = { tree, staticRoot, func, data };
 	MarkSubtree(tree->root, &context);
 	if (staticIndex && !staticRoot) cpSpatialIndexCollideStatic((cpSpatialIndex*)tree, staticIndex, func, data);
 
@@ -805,7 +805,7 @@ static void each_helper(Node* node, eachContext* context)
 static void
 cpBBTreeEach(cpBBTree* tree, cpSpatialIndexIteratorFunc func, void* data)
 {
-	eachContext context = {func, data};
+	eachContext context = { func, data };
 	cpHashSetEach(tree->leaves, (cpHashSetIteratorFunc)each_helper, &context);
 }
 

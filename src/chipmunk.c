@@ -36,22 +36,22 @@ cpMessage(const char* condition, const char* file, int line, int isError, int is
 	va_list vargs;
 	va_start(vargs, message);
 	{
-		#if defined(ANDROID)
+#if defined(ANDROID)
 		__android_log_print(ANDROID_LOG_INFO, "Chipmunk", "%s(%d)", file, line);
 		__android_log_print(ANDROID_LOG_INFO, "Chipmunk", message, vargs);
-		#else
+#else
 		vfprintf(stderr, message, vargs);
 		fprintf(stderr, "\n");
-		#endif
+#endif
 	} va_end(vargs);
 
-	#if defined(ANDROID)
+#if defined(ANDROID)
 	__android_log_print(ANDROID_LOG_INFO, "Chipmunk", "\tFailed condition: %s\n", condition);
 	__android_log_print(ANDROID_LOG_INFO, "Chipmunk", "\tSource:%s:%d\n", file, line);
-	#else
+#else
 	fprintf(stderr, "\tFailed condition: %s\n", condition);
 	fprintf(stderr, "\tSource:%s:%d\n", file, line);
-	#endif
+#endif
 }
 
 #define STR(s) #s
