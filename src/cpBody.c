@@ -495,6 +495,12 @@ cpBodySetTransform(cpBody* body, cpVect position, cpFloat angle, cpVect scale)
 	SetTransform(body, p, a, s);
 }
 
+void
+cpBodySetTransform2(cpBody* body, cpVect position, cpFloat angle, cpVect scale)
+{
+	SetTransform(body, position, angle, scale);
+}
+
 cpVect
 cpBodyGetCenterOfGravity(const cpBody* body)
 {

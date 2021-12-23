@@ -327,6 +327,7 @@ cpArbiterInit(cpArbiter* arb, cpShape* a, cpShape* b)
 {
 	arb->handler = NULL;
 	arb->swapped = cpFalse;
+	arb->dirty = cpFalse;
 
 	arb->handler = NULL;
 	arb->handlerA = NULL;
@@ -337,6 +338,7 @@ cpArbiterInit(cpArbiter* arb, cpShape* a, cpShape* b)
 	arb->surface_vr = cpvzero;
 
 	arb->count = 0;
+	arb->offset = 0;
 	arb->contacts = NULL;
 
 	arb->a = a; arb->body_a = a->body;
@@ -399,6 +401,14 @@ cpArbiterUpdate(cpArbiter* arb, struct cpCollisionInfo* info, cpSpace* space)
 		}
 	}
 
+	arb->dirty = cpFalse;
+
+	if (arb->state == CP_ARBITER_STATE_NORMAL && arb->count != info->count)
+	{
+		arb->dirty = cpTrue;
+		arb->offset = arb->count;
+	}
+
 	arb->contacts = info->arr;
 	arb->count = info->count;
 	arb->n = info->n;
@@ -424,7 +434,16 @@ cpArbiterUpdate(cpArbiter* arb, struct cpCollisionInfo* info, cpSpace* space)
 	}
 
 	// mark it as new if it's been cached
-	if (arb->state == CP_ARBITER_STATE_CACHED) arb->state = CP_ARBITER_STATE_FIRST_COLLISION;
+	if (arb->state == CP_ARBITER_STATE_CACHED)
+	{
+		arb->state = CP_ARBITER_STATE_FIRST_COLLISION;
+	}
+
+	if (arb->state == CP_ARBITER_STATE_FIRST_COLLISION)
+	{
+		arb->offset = 0;
+		arb->dirty = cpTrue;
+	}
 }
 
 void
@@ -463,6 +482,10 @@ cpArbiterApplyCachedImpulse(cpArbiter* arb, cpFloat dt_coef)
 	cpBody* b = arb->body_b;
 	cpVect n = arb->n;
 
+	cpFloat w_damp = 1.00f - (cpfclamp01((1.00f - arb->e) * arb->u) * 0.10f);
+	a->w *= w_damp;
+	b->w *= w_damp;
+
 	for (int i = 0; i < arb->count; i++)
 	{
 		struct cpContact* con = &arb->contacts[i];
@@ -481,6 +504,7 @@ cpArbiterApplyImpulse(cpArbiter* arb)
 	cpVect n = arb->n;
 	cpVect surface_vr = arb->surface_vr;
 	cpFloat friction = arb->u;
+	cpFloat elasticity = arb->e;
 
 	for (int i = 0; i < arb->count; i++)
 	{
