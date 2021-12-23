@@ -43,6 +43,7 @@ struct cpImpact
 	cpFloat bounce;
 	cpFloat bounce_rigid;
 
+	int count;
 	cpTimestamp stamp;
 
 	uint8_t dirty;
@@ -164,12 +165,14 @@ struct cpArbiter
 	struct cpArbiterThread thread_a, thread_b;
 
 	int count;
+	int offset;
 	struct cpContact* contacts;
 	cpVect n;
 
 	// Regular, wildcard A and wildcard B collision handlers.
 	cpCollisionHandler* handler, * handlerA, * handlerB;
 	cpBool swapped;
+	cpBool dirty;
 
 	cpTimestamp stamp;
 	enum cpArbiterState state;

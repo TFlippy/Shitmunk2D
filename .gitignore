@@ -66,5 +66,6 @@ msvc/vc14/demo/x64/
 .vs
 */Debug
 */Release
+[Ll]ocal/
 Release
 RelWithDebInfo
