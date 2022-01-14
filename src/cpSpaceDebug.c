@@ -72,22 +72,24 @@ cpSpaceDebugDrawShape(cpShape* shape, cpSpaceDebugDrawOptions* options)
 	}
 }
 
+static const float spring_verts_w = 0.05f;
+
 static const cpVect spring_verts[] = {
-	{0.00f, 0.0f},
-	{0.20f, 0.0f},
-	{0.25f, 3.0f},
-	{0.30f,-6.0f},
-	{0.35f, 6.0f},
-	{0.40f,-6.0f},
-	{0.45f, 6.0f},
-	{0.50f,-6.0f},
-	{0.55f, 6.0f},
-	{0.60f,-6.0f},
-	{0.65f, 6.0f},
-	{0.70f,-3.0f},
-	{0.75f, 6.0f},
-	{0.80f, 0.0f},
-	{1.00f, 0.0f},
+	{0.00f, 0.0f * spring_verts_w},
+	{0.20f, 0.0f * spring_verts_w},
+	{0.25f, 3.0f * spring_verts_w},
+	{0.30f,-6.0f * spring_verts_w},
+	{0.35f, 6.0f * spring_verts_w},
+	{0.40f,-6.0f * spring_verts_w},
+	{0.45f, 6.0f * spring_verts_w},
+	{0.50f,-6.0f * spring_verts_w},
+	{0.55f, 6.0f * spring_verts_w},
+	{0.60f,-6.0f * spring_verts_w},
+	{0.65f, 6.0f * spring_verts_w},
+	{0.70f,-3.0f * spring_verts_w},
+	{0.75f, 6.0f * spring_verts_w},
+	{0.80f, 0.0f * spring_verts_w},
+	{1.00f, 0.0f * spring_verts_w},
 };
 static const int spring_count = sizeof(spring_verts) / sizeof(cpVect);
 

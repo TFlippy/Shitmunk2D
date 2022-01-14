@@ -49,7 +49,7 @@ typedef void (*cpSpatialIndexIteratorFunc)(void *obj, void *data);
 typedef cpCollisionID (*cpSpatialIndexQueryFunc)(void *obj1, void *obj2, cpCollisionID id, void *data);
 /// Spatial segment query callback function type.
 typedef cpFloat (*cpSpatialIndexSegmentQueryFunc)(void *obj1, void *obj2, void *data);
-
+typedef cpBool(*cpSpatialIndexBBQueryFunc)(void* obj1, void* obj2, void* data);
 
 typedef struct cpSpatialIndexClass cpSpatialIndexClass;
 typedef struct cpSpatialIndex cpSpatialIndex;
@@ -127,7 +127,8 @@ typedef void (*cpSpatialIndexReindexImpl)(cpSpatialIndex *index);
 typedef void (*cpSpatialIndexReindexObjectImpl)(cpSpatialIndex *index, void *obj, cpHashValue hashid);
 typedef void (*cpSpatialIndexReindexQueryImpl)(cpSpatialIndex *index, cpSpatialIndexQueryFunc func, void *data);
 
-typedef void (*cpSpatialIndexQueryImpl)(cpSpatialIndex *index, void *obj, cpBB bb, cpSpatialIndexQueryFunc func, void *data);
+typedef void (*cpSpatialIndexQueryImpl)(cpSpatialIndex* index, void* obj, cpBB bb, cpSpatialIndexQueryFunc func, void* data);
+typedef void (*cpSpatialIndexBBQueryImpl)(cpSpatialIndex *index, void *obj, cpBB bb, cpSpatialIndexBBQueryFunc func, void *data);
 typedef void (*cpSpatialIndexSegmentQueryImpl)(cpSpatialIndex *index, void *obj, cpVect a, cpVect b, cpFloat t_exit, cpSpatialIndexSegmentQueryFunc func, void *data);
 
 struct cpSpatialIndexClass {
@@ -145,6 +146,7 @@ struct cpSpatialIndexClass {
 	cpSpatialIndexReindexQueryImpl reindexQuery;
 	
 	cpSpatialIndexQueryImpl query;
+	cpSpatialIndexBBQueryImpl bbQuery;
 	cpSpatialIndexSegmentQueryImpl segmentQuery;
 };
 
@@ -215,6 +217,12 @@ static inline void cpSpatialIndexSegmentQuery(cpSpatialIndex *index, void *obj, 
 {
 	index->klass->segmentQuery(index, obj, a, b, t_exit, func, data);
 }
+
+static inline void cpSpatialIndexBBQuery(cpSpatialIndex* index, void* obj, cpBB bb, cpSpatialIndexBBQueryFunc func, void* data)
+{
+	index->klass->bbQuery(index, obj, bb, func, data);
+}
+
 
 /// Simultaneously reindex and find all colliding objects.
 /// @c func will be called once for each potentially overlapping pair of objects found.

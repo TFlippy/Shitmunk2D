@@ -640,6 +640,7 @@ static cpSpatialIndexClass klass = {
 	(cpSpatialIndexReindexQueryImpl)cpSpaceHashReindexQuery,
 
 	(cpSpatialIndexQueryImpl)cpSpaceHashQuery,
+	(cpSpatialIndexBBQueryImpl)NULL,
 	(cpSpatialIndexSegmentQueryImpl)cpSpaceHashSegmentQuery,
 };
 

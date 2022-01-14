@@ -355,16 +355,16 @@ struct BBQueryMeta
 	int max_count;
 };
 
-static cpCollisionID
-BBQuery2(struct BBQueryContext* context, cpShape* shape, cpCollisionID id, BBQueryMeta* meta)
+static cpBool
+BBQuery2(struct BBQueryContext* context, cpShape* shape, BBQueryMeta* meta)
 {
-	if (meta->count < meta->max_count && !cpShapeFilterReject(shape->filter, context->filter) && cpBBIntersects(context->bb, shape->bb))
+	//if (cpBBIntersects(context->bb, shape->bb) && !cpShapeFilterReject(shape->filter, context->filter))
+	if (!cpShapeFilterReject(shape->filter, context->filter))
 	{
-		meta->results[meta->count] = { shape };
-		meta->count++;
+		meta->results[meta->count++] = { shape };
 	}
 
-	return id;
+	return meta->count < meta->max_count;
 }
 
 size_t
@@ -384,8 +384,8 @@ cpSpaceBBQuery2(cpSpace* space, cpBB bb, cpShapeFilter filter, cpBBQueryInfo* re
 		max_count
 	};
 
-	if ((flags & QUERY_DYNAMIC) && meta.count < meta.max_count) cpSpatialIndexQuery(space->dynamicShapes, &context, bb, (cpSpatialIndexQueryFunc)BBQuery2, &meta);
-	if ((flags & QUERY_STATIC) && meta.count < meta.max_count) cpSpatialIndexQuery(space->staticShapes, &context, bb, (cpSpatialIndexQueryFunc)BBQuery2, &meta);
+	if ((flags & QUERY_DYNAMIC) && meta.count < meta.max_count) cpSpatialIndexBBQuery(space->dynamicShapes, &context, bb, (cpSpatialIndexBBQueryFunc)BBQuery2, &meta);
+	if ((flags & QUERY_STATIC) && meta.count < meta.max_count) cpSpatialIndexBBQuery(space->staticShapes, &context, bb, (cpSpatialIndexBBQueryFunc)BBQuery2, &meta);
 
 	return meta.count;
 }

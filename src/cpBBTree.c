@@ -411,6 +411,25 @@ SubtreeQuery(Node* subtree, void* obj, cpBB bb, cpSpatialIndexQueryFunc func, vo
 	}
 }
 
+static cpBool
+SubtreeBBQuery(Node* subtree, void* obj, cpBB bb, cpSpatialIndexBBQueryFunc func, void* data)
+{
+	if (cpBBIntersects(subtree->bb, bb))
+	{
+		if (NodeIsLeaf(subtree))
+		{
+			return func(obj, subtree->obj, data);
+		}
+		else
+		{
+			return SubtreeBBQuery(subtree->A, obj, bb, func, data) && SubtreeBBQuery(subtree->B, obj, bb, func, data);
+		}
+	}
+	else
+	{
+		return cpTrue;
+	}
+}
 
 static cpFloat
 SubtreeSegmentQuery(Node* subtree, void* obj, cpVect a, cpVect b, cpFloat t_exit, cpSpatialIndexSegmentQueryFunc func, void* data)
@@ -783,6 +802,13 @@ cpBBTreeQuery(cpBBTree* tree, void* obj, cpBB bb, cpSpatialIndexQueryFunc func, 
 	if (tree->root) SubtreeQuery(tree->root, obj, bb, func, data);
 }
 
+static void
+cpBBTreeBBQuery(cpBBTree* tree, void* obj, cpBB bb, cpSpatialIndexBBQueryFunc func, void* data)
+{
+	Node* root = tree->root;
+	if (root) SubtreeBBQuery(root, obj, bb, func, data);
+}
+
 //MARK: Misc
 
 static int
@@ -824,6 +850,7 @@ static cpSpatialIndexClass klass = {
 	(cpSpatialIndexReindexQueryImpl)cpBBTreeReindexQuery,
 
 	(cpSpatialIndexQueryImpl)cpBBTreeQuery,
+	(cpSpatialIndexBBQueryImpl)cpBBTreeBBQuery,
 	(cpSpatialIndexSegmentQueryImpl)cpBBTreeSegmentQuery,
 };
 
