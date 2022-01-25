@@ -55,6 +55,13 @@ typedef struct cpSegmentQueryInfo
 	cpFloat alpha;
 } cpSegmentQueryInfo;
 
+/// Shape query info struct.
+typedef struct cpShapeQueryInfo
+{
+	/// The shape that was hit, or NULL if no collision occured.
+	const cpShape* shape;
+} cpShapeQueryInfo;
+
 /// Fast collision filtering type that is used to determine if two objects collide before calling collision or query callbacks.
 typedef struct cpShapeFilter
 {

@@ -230,6 +230,7 @@ CP_EXPORT cpBool cpSpaceShapeQuery(cpSpace* space, cpShape* shape, cpSpaceShapeQ
 CP_EXPORT size_t cpSpaceSegmentQuery2(cpSpace* space, cpVect start, cpVect end, cpFloat radius, cpShapeFilter filter, cpSegmentQueryInfo* results, enum cpQueryFlags flags, int max_count);
 CP_EXPORT size_t cpSpacePointQuery2(cpSpace* space, cpVect point, cpFloat maxDistance, cpShapeFilter filter, cpPointQueryInfo* results, enum cpQueryFlags flags, int max_count);
 CP_EXPORT size_t cpSpaceBBQuery2(cpSpace* space, cpBB bb, cpShapeFilter filter, cpBBQueryInfo* results, enum cpQueryFlags flags, int max_count);
+CP_EXPORT size_t cpSpaceShapeQuery2(cpSpace* space, cpShape* shape, cpShapeFilter filter, cpShapeQueryInfo* results, enum cpQueryFlags flags, int max_count);
 //CP_EXPORT size_t cpSpaceBBQuery2(cpSpace* space, cpBB bb, cpShapeFilter filter, cpPointQueryInfo* results, cpQueryFlags flags, int max_count);
 
 //MARK: Iteration

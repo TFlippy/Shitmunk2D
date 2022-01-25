@@ -422,12 +422,15 @@ SubtreeBBQuery(Node* subtree, void* obj, cpBB bb, cpSpatialIndexBBQueryFunc func
 		}
 		else
 		{
-			return SubtreeBBQuery(subtree->A, obj, bb, func, data) && SubtreeBBQuery(subtree->B, obj, bb, func, data);
+			cpBool ok = cpTrue;
+			ok &= SubtreeBBQuery(subtree->A, obj, bb, func, data);
+			ok &= SubtreeBBQuery(subtree->B, obj, bb, func, data);
+			return ok;
 		}
 	}
 	else
 	{
-		return cpTrue;
+		return cpFalse;
 	}
 }
 

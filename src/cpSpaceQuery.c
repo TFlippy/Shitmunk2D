@@ -46,7 +46,7 @@ static cpCollisionID NearestPointQuery(struct PointQueryContext* context, cpShap
 
 void cpSpacePointQuery(cpSpace* space, cpVect point, cpFloat maxDistance, cpShapeFilter filter, cpSpacePointQueryFunc func, void* data)
 {
-	struct PointQueryContext context = {point, maxDistance, filter, func};
+	struct PointQueryContext context = { point, maxDistance, filter, func };
 	cpBB bb = cpBBNewForCircle(point, cpfmax(maxDistance, 0.0f));
 
 	cpSpatialIndexQuery(space->dynamicShapes, &context, bb, (cpSpatialIndexQueryFunc)NearestPointQuery, data);
@@ -69,7 +69,7 @@ static cpCollisionID NearestPointQueryNearest(struct PointQueryContext* context,
 cpShape*
 cpSpacePointQueryNearest(cpSpace* space, cpVect point, cpFloat maxDistance, cpShapeFilter filter, cpPointQueryInfo* out)
 {
-	cpPointQueryInfo info = {NULL, cpvzero, maxDistance, cpvzero};
+	cpPointQueryInfo info = { NULL, cpvzero, maxDistance, cpvzero };
 	if (out)
 	{
 		(*out) = info;
@@ -151,7 +151,7 @@ SegmentQueryFirst(struct SegmentQueryContext* context, cpShape* shape, cpSegment
 cpShape*
 cpSpaceSegmentQueryFirst(cpSpace* space, cpVect start, cpVect end, cpFloat radius, cpShapeFilter filter, cpSegmentQueryInfo* out)
 {
-	cpSegmentQueryInfo info = {NULL, end, cpvzero, 1.0f};
+	cpSegmentQueryInfo info = { NULL, end, cpvzero, 1.0f };
 	if (out)
 	{
 		(*out) = info;
@@ -199,7 +199,7 @@ BBQuery(struct BBQueryContext* context, cpShape* shape, cpCollisionID id, void* 
 void
 cpSpaceBBQuery(cpSpace* space, cpBB bb, cpShapeFilter filter, cpSpaceBBQueryFunc func, void* data)
 {
-	struct BBQueryContext context = {bb, filter, func};
+	struct BBQueryContext context = { bb, filter, func };
 
 	//cpSpaceLock(space);
 	//{
@@ -216,6 +216,12 @@ struct ShapeQueryContext
 	cpSpaceShapeQueryFunc func;
 	void* data;
 	cpBool anyCollision;
+};
+
+struct ShapeQueryContext2
+{
+	cpShape* shape;
+	cpShapeFilter filter;
 };
 
 // Callback from the spatial hash.
@@ -239,7 +245,7 @@ cpSpaceShapeQuery(cpSpace* space, cpShape* shape, cpSpaceShapeQueryFunc func, vo
 {
 	cpBody* body = shape->body;
 	cpBB bb = (body ? cpShapeUpdate(shape, body->transform) : shape->bb);
-	struct ShapeQueryContext context = {func, data, cpFalse};
+	struct ShapeQueryContext context = { func, data, cpFalse };
 
 	//cpSpaceLock(space);
 	//{
@@ -348,6 +354,70 @@ cpSpaceSegmentQuery2(cpSpace* space, cpVect start, cpVect end, cpFloat radius, c
 	return meta.count;
 }
 
+struct ShapeQueryMeta
+{
+	cpShapeQueryInfo* results;
+	int count;
+	int max_count;
+};
+
+// Callback from the spatial hash.
+static cpCollisionID
+ShapeQuery2(struct ShapeQueryContext2* context, cpShape* shape, cpCollisionID id, ShapeQueryMeta* meta)
+{
+	if (meta->count < meta->max_count && shape != context->shape && !cpShapeFilterReject(shape->filter, context->filter))
+	{
+		cpContactPointSet set = cpShapesCollide(shape, context->shape);
+		if (set.count)
+		{
+			meta->results[meta->count] = 
+			{
+				shape
+			};
+			meta->count++;
+		}
+	}
+
+	return id;
+
+	//if (cpShapeFilterReject(a->filter, b->filter) || a == b) return id;
+
+	//cpContactPointSet set = cpShapesCollide(a, b);
+	//if (set.count)
+	//{
+	//	if (context->func) context->func(b, &set, context->data);
+	//	context->anyCollision = !(a->sensor || b->sensor);
+	//}
+
+	//return id;
+}
+
+size_t
+cpSpaceShapeQuery2(cpSpace* space, cpShape* shape, cpShapeFilter filter, cpShapeQueryInfo* results, enum cpQueryFlags flags, int max_count)
+{
+	cpBody* body = shape->body;
+	cpBB bb = (body ? cpShapeUpdate(shape, body->transform) : shape->bb);
+
+	struct ShapeQueryContext2 context = 
+	{ 
+		shape,
+		filter
+	};
+
+	struct ShapeQueryMeta meta =
+	{
+		results,
+		0,
+		max_count
+	};
+
+	if ((flags & QUERY_DYNAMIC) && meta.count < meta.max_count) cpSpatialIndexQuery(space->dynamicShapes, &context, bb, (cpSpatialIndexQueryFunc)ShapeQuery2, &meta);
+	if ((flags & QUERY_STATIC) && meta.count < meta.max_count) cpSpatialIndexQuery(space->staticShapes, &context, bb, (cpSpatialIndexQueryFunc)ShapeQuery2, &meta);
+
+	return meta.count;
+}
+
+
 struct BBQueryMeta
 {
 	cpBBQueryInfo* results;
@@ -359,7 +429,7 @@ static cpBool
 BBQuery2(struct BBQueryContext* context, cpShape* shape, BBQueryMeta* meta)
 {
 	//if (cpBBIntersects(context->bb, shape->bb) && !cpShapeFilterReject(shape->filter, context->filter))
-	if (!cpShapeFilterReject(shape->filter, context->filter))
+	if (meta->count < meta->max_count && cpBBIntersects(context->bb, shape->bb) && !cpShapeFilterReject(shape->filter, context->filter))
 	{
 		meta->results[meta->count++] = { shape };
 	}
@@ -389,3 +459,4 @@ cpSpaceBBQuery2(cpSpace* space, cpBB bb, cpShapeFilter filter, cpBBQueryInfo* re
 
 	return meta.count;
 }
+
