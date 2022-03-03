@@ -32,6 +32,8 @@ cpSpaceDebugDrawShape(cpShape* shape, cpSpaceDebugDrawOptions* options)
 	cpSpaceDebugColor outline_color = options->colorForShape(shape, data);
 	cpSpaceDebugColor fill_color = options->colorForShape(shape, data);
 
+	options->drawCircle(body->p, 0.00f, 0.25f, options->constraintColor, options->constraintColor, data);
+
 	switch (shape->klass->type)
 	{
 	case CP_CIRCLE_SHAPE:

@@ -70,10 +70,14 @@ typedef struct cpShapeFilter
 	cpGroup group;
 	/// A bitmask of user definable categories that this object belongs to.
 	/// The category/mask combinations of both objects in a collision must agree for a collision to occur.
-	cpBitmask categories;
+	cpBitmask layer;
 	/// A bitmask of user definable category types that this object object collides with.
 	/// The category/mask combinations of both objects in a collision must agree for a collision to occur.
 	cpBitmask mask;
+
+	cpBitmask required;
+	cpBitmask optional;
+	cpBitmask excluded;
 } cpShapeFilter;
 
 /// Collision filter value for a shape that will collide with anything except CP_SHAPE_FILTER_NONE.
@@ -83,9 +87,9 @@ static const cpShapeFilter CP_SHAPE_FILTER_NONE = {CP_NO_GROUP, ~CP_ALL_CATEGORI
 
 /// Create a new collision filter.
 static inline cpShapeFilter
-cpShapeFilterNew(cpGroup group, cpBitmask categories, cpBitmask mask)
+cpShapeFilterNew(cpGroup group, cpBitmask layer, cpBitmask mask)
 {
-	cpShapeFilter filter = {group, categories, mask};
+	cpShapeFilter filter = {group, layer, mask};
 	return filter;
 }
 

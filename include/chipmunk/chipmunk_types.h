@@ -210,7 +210,7 @@ typedef void* cpDataPointer;
 typedef CP_COLLISION_TYPE_TYPE cpCollisionType;
 #else
 /// Type used for cpSpace.collision_type.
-typedef uintptr_t cpCollisionType;
+typedef unsigned long long cpCollisionType;
 #endif
 
 #ifdef CP_GROUP_TYPE
@@ -224,7 +224,7 @@ typedef unsigned long long cpGroup;
 typedef CP_BITMASK_TYPE cpBitmask;
 #else
 /// Type used for cpShapeFilter category and mask.
-typedef unsigned int cpBitmask;
+typedef unsigned long long cpBitmask;
 #endif
 
 #ifdef CP_TIMESTAMP_TYPE
@@ -241,7 +241,7 @@ typedef unsigned int cpTimestamp;
 
 #ifndef CP_ALL_CATEGORIES
 /// Value for cpShape.layers signifying that a shape is in every layer.
-#define CP_ALL_CATEGORIES (~(cpBitmask)0)
+#define CP_ALL_CATEGORIES (~(cpBitmask)0ul)
 #endif
 
 #ifndef CP_WILDCARD_COLLISION_TYPE
