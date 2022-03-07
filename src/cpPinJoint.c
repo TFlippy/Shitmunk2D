@@ -27,12 +27,12 @@ preStep(cpPinJoint* joint, cpFloat dt)
 	cpBody* a = joint->constraint.a;
 	cpBody* b = joint->constraint.b;
 
-	joint->r1 = cpTransformVect(a->transform, cpvsub(joint->anchorA, cpvmult2(a->cog, a->s)));
-	joint->r2 = cpTransformVect(b->transform, cpvsub(joint->anchorB, cpvmult2(b->cog, b->s)));
+	joint->r1 = cpTransformVect(a->transform, cpvsub(joint->anchorA, a->cog));
+	joint->r2 = cpTransformVect(b->transform, cpvsub(joint->anchorB, b->cog));
 
 	cpVect delta = cpvsub(cpvadd(b->p, joint->r2), cpvadd(a->p, joint->r1));
 	cpFloat dist = cpvlength(delta);
-	joint->n = cpvmult(delta, 1.0f / (dist ? dist : (cpFloat)INFINITY));
+	//joint->n = cpvmult(delta, 1.0f / (dist ? dist : (cpFloat)INFINITY));
 
 	// calculate mass normal
 	joint->nMass = 1.0f / k_scalar(a, b, joint->r1, joint->r2, joint->n);

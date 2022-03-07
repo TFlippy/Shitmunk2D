@@ -32,7 +32,15 @@ cpSpaceDebugDrawShape(cpShape* shape, cpSpaceDebugDrawOptions* options)
 	cpSpaceDebugColor outline_color = options->colorForShape(shape, data);
 	cpSpaceDebugColor fill_color = options->colorForShape(shape, data);
 
-	options->drawCircle(body->p, 0.00f, 0.25f, options->constraintColor, options->constraintColor, data);
+	//cpSpaceDebugColor tra_color = { 1, 0, 0, 1 };
+	//cpSpaceDebugColor pos_color = { 0, 1, 0, 1 };
+	//cpSpaceDebugColor cog_color = { 0, 0, 1, 1 };
+	//cpSpaceDebugColor cog_color2 = { 0, 0, 1, 0.50f };
+
+	//options->drawCircle(body->p, 0.00f, 0.25f, pos_color, pos_color, data);
+	//options->drawCircle(cpv(body->transform.tx, body->transform.ty), 0.00f, 0.25f, tra_color, tra_color, data);
+	//options->drawCircle(cpTransformPoint(body->transform, body->cog), 0.00f, 0.25f, cog_color, cog_color, data);
+	//options->drawCircle(cpTransformPoint(body->transform_unscaled, body->cog), 0.00f, 0.25f, cog_color2, cog_color2, data);
 
 	switch (shape->klass->type)
 	{

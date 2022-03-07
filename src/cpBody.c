@@ -450,8 +450,8 @@ SetTransform(cpBody* body, cpVect p, cpFloat a, cpVect s)
 {
 	cpVect rot = cpvforangle(a);
 	cpVect c = body->cog;
-	//c.x *= s.x;
-	//c.y *= s.y;
+	c.x *= s.x;
+	c.y *= s.y;
 
 	body->transform_unscaled = cpTransformNewTranspose(
 		rot.x, -rot.y, p.x - (c.x * rot.x - c.y * rot.y),
@@ -472,14 +472,14 @@ SetAngle(cpBody* body, cpFloat a)
 cpVect
 cpBodyGetPosition(const cpBody* body)
 {
-	return cpTransformPoint(body->transform_unscaled, cpvzero);
+	return cpTransformPoint(body->transform, cpvzero);
 }
 
 void
 cpBodySetPosition(cpBody* body, cpVect position)
 {
 	//cpBodyActivate(body);
-	cpVect p = body->p = cpvadd(cpTransformVect(body->transform_unscaled, body->cog), position);
+	cpVect p = body->p = cpvadd(cpTransformVect(body->transform, body->cog), position);
 	cpAssertSaneBody(body);
 
 	SetTransform(body, p, body->a, body->s);
@@ -488,7 +488,7 @@ cpBodySetPosition(cpBody* body, cpVect position)
 void
 cpBodySetTransform(cpBody* body, cpVect position, cpFloat angle, cpVect scale)
 {
-	cpVect p = body->p = cpvadd(cpTransformVect(body->transform_unscaled, body->cog), position);
+	cpVect p = body->p = cpvadd(cpTransformVect(body->transform, body->cog), position);
 	cpFloat a = body->a = angle;
 	cpVect s = body->s = scale;
 
