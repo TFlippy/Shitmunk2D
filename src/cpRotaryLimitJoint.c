@@ -27,7 +27,7 @@ preStep(cpRotaryLimitJoint* joint, cpFloat dt)
 	cpBody* a = joint->constraint.a;
 	cpBody* b = joint->constraint.b;
 
-	cpFloat dist = b->a - a->a;
+	cpFloat dist = cpangdiff(b->a, a->a);
 	cpFloat pdist = 0.0f;
 	if (dist > joint->max)
 	{
