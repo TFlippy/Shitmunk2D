@@ -32,7 +32,7 @@ preStep(cpPinJoint* joint, cpFloat dt)
 
 	cpVect delta = cpvsub(cpvadd(b->p, joint->r2), cpvadd(a->p, joint->r1));
 	cpFloat dist = cpvlength(delta);
-	//joint->n = cpvmult(delta, 1.0f / (dist ? dist : (cpFloat)INFINITY));
+	joint->n = cpveql(joint->dir, cpvzero) ? cpvmult(delta, 1.0f / (dist ? dist : (cpFloat)INFINITY)) : joint->dir;
 
 	// calculate mass normal
 	joint->nMass = 1.0f / k_scalar(a, b, joint->r1, joint->r2, joint->n);
@@ -40,6 +40,7 @@ preStep(cpPinJoint* joint, cpFloat dt)
 	// calculate bias velocity
 	cpFloat maxBias = joint->constraint.maxBias;
 	joint->bias = cpfclamp(-bias_coef(joint->constraint.errorBias, dt) * (dist - joint->dist) / dt, -maxBias, maxBias);
+	joint->delta = delta;
 }
 
 static void
@@ -55,6 +56,8 @@ applyCachedImpulse(cpPinJoint* joint, cpFloat dt_coef)
 static void
 applyImpulse(cpPinJoint* joint, cpFloat dt)
 {
+	//if (cpveql(joint->delta, cpvzero)) return;
+
 	cpBody* a = joint->constraint.a;
 	cpBody* b = joint->constraint.b;
 	cpVect n = joint->n;
@@ -110,6 +113,8 @@ cpPinJointInit(cpPinJoint* joint, cpBody* a, cpBody* b, cpVect anchorA, cpVect a
 	cpAssertWarn(joint->dist > 0.0, "You created a 0 length pin joint. A pivot joint will be much more stable.");
 
 	joint->jnAcc = 0.0f;
+	joint->delta = cpvzero;
+	joint->dir = cpvzero;
 
 	return joint;
 }

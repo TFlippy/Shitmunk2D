@@ -57,11 +57,11 @@ preStep(cpGrooveJoint* joint, cpFloat dt)
 		joint->r1 = cpvsub(cpvadd(cpvmult(cpvperp(n), -td), cpvmult(n, d)), a->p);
 	}
 
-	// Calculate mass tensor
 	joint->k = k_tensor(a, b, joint->r1, joint->r2);
 
-	// calculate bias velocity
 	cpVect delta = cpvsub(cpvadd(b->p, joint->r2), cpvadd(a->p, joint->r1));
+	joint->delta = delta;
+
 	joint->bias = cpvclamp(cpvmult(delta, -bias_coef(joint->constraint.errorBias, dt) / dt), joint->constraint.maxBias);
 }
 
@@ -85,6 +85,8 @@ grooveConstrain(cpGrooveJoint* joint, cpVect j, cpFloat dt)
 static void
 applyImpulse(cpGrooveJoint* joint, cpFloat dt)
 {
+	//if (cpveql(joint->delta, cpvzero)) return; 
+
 	cpBody* a = joint->constraint.a;
 	cpBody* b = joint->constraint.b;
 
@@ -133,6 +135,7 @@ cpGrooveJointInit(cpGrooveJoint* joint, cpBody* a, cpBody* b, cpVect groove_a, c
 	joint->anchorB = anchorB;
 
 	joint->jAcc = cpvzero;
+	joint->delta = cpvzero;
 
 	return joint;
 }

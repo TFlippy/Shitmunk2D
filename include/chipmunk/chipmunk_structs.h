@@ -337,6 +337,8 @@ struct cpPinJoint
 
 	cpFloat jnAcc;
 	cpFloat bias;
+	cpVect delta;
+	cpVect dir;
 };
 
 struct cpSlideJoint
@@ -351,6 +353,7 @@ struct cpSlideJoint
 
 	cpFloat jnAcc;
 	cpFloat bias;
+	cpVect delta;
 };
 
 struct cpPivotJoint
@@ -365,7 +368,6 @@ struct cpPivotJoint
 	cpVect jAcc_raw;
 
 	cpVect bias;
-
 	cpVect delta;
 };
 
@@ -382,6 +384,7 @@ struct cpGrooveJoint
 
 	cpVect jAcc;
 	cpVect bias;
+	cpVect delta;
 };
 
 struct cpDampedSpring
@@ -427,6 +430,8 @@ struct cpRotaryLimitJoint
 
 	cpFloat bias;
 	cpFloat jAcc;
+
+	cpFloat delta;
 };
 
 struct cpRatchetJoint
@@ -450,6 +455,8 @@ struct cpGearJoint
 
 	cpFloat bias;
 	cpFloat jAcc;
+
+	cpFloat delta;
 };
 
 struct cpSimpleMotor

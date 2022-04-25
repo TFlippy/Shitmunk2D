@@ -36,16 +36,16 @@ preStep(cpSlideJoint* joint, cpFloat dt)
 	if (dist > joint->max)
 	{
 		pdist = dist - joint->max;
-		joint->n = cpvnormalize(delta);
+		//joint->n = cpvnormalize(delta);
 	}
 	else if (dist < joint->min)
 	{
 		pdist = joint->min - dist;
-		joint->n = cpvneg(cpvnormalize(delta));
+		//joint->n = cpvneg(cpvnormalize(delta));
 	}
 	else
 	{
-		joint->n = cpvzero;
+		//joint->n = cpvzero;
 		joint->jnAcc = 0.0f;
 	}
 
@@ -55,6 +55,7 @@ preStep(cpSlideJoint* joint, cpFloat dt)
 	// calculate bias velocity
 	cpFloat maxBias = joint->constraint.maxBias;
 	joint->bias = cpfclamp(-bias_coef(joint->constraint.errorBias, dt) * pdist / dt, -maxBias, maxBias);
+	joint->delta = delta;
 }
 
 static void
@@ -70,7 +71,7 @@ applyCachedImpulse(cpSlideJoint* joint, cpFloat dt_coef)
 static void
 applyImpulse(cpSlideJoint* joint, cpFloat dt)
 {
-	if (cpveql(joint->n, cpvzero)) return;  // early exit
+	//if (cpveql(joint->delta, cpvzero)) return;  // early exit
 
 	cpBody* a = joint->constraint.a;
 	cpBody* b = joint->constraint.b;
@@ -123,6 +124,7 @@ cpSlideJointInit(cpSlideJoint* joint, cpBody* a, cpBody* b, cpVect anchorA, cpVe
 	joint->max = max;
 
 	joint->jnAcc = 0.0f;
+	joint->delta = cpvzero;
 
 	return joint;
 }

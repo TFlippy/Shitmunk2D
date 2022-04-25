@@ -101,6 +101,8 @@ cpPivotJointInit(cpPivotJoint* joint, cpBody* a, cpBody* b, cpVect anchorA, cpVe
 	joint->jAcc = cpvzero;
 	joint->jAcc_raw = cpvzero;
 
+	joint->delta = cpvzero;
+
 	return joint;
 }
 

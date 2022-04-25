@@ -27,23 +27,24 @@ preStep(cpRotaryLimitJoint* joint, cpFloat dt)
 	cpBody* a = joint->constraint.a;
 	cpBody* b = joint->constraint.b;
 
-	cpFloat dist = cpfmod(b->a - a->a, CP_TAU);
-	cpFloat pdist = 0.0f;
-	if (dist > joint->max)
+	cpFloat delta = cpfmod(b->a - a->a, CP_TAU);
+	cpFloat pdelta = 0.0f;
+	if (delta > joint->max)
 	{
-		pdist = joint->max - dist;
+		pdelta = joint->max - delta;
 	}
-	else if (dist < joint->min)
+	else if (delta < joint->min)
 	{
-		pdist = joint->min - dist;
+		pdelta = joint->min - delta;
 	}
 
 	// calculate moment of inertia coefficient.
 	joint->iSum = 1.0f / (a->i_inv + b->i_inv);
+	joint->delta = pdelta;
 
 	// calculate bias velocity
 	cpFloat maxBias = joint->constraint.maxBias;
-	joint->bias = cpfclamp(-bias_coef(joint->constraint.errorBias, dt) * pdist / dt, -maxBias, maxBias);
+	joint->bias = cpfclamp(-bias_coef(joint->constraint.errorBias, dt) * pdelta / dt, -maxBias, maxBias);
 
 	// If the bias is 0, the joint is not at a limit. Reset the impulse.
 	if (!joint->bias) joint->jAcc = 0.0f;
@@ -76,6 +77,7 @@ applyImpulse(cpRotaryLimitJoint* joint, cpFloat dt)
 	// compute normal impulse	
 	cpFloat j = -(joint->bias + wr) * joint->iSum;
 	cpFloat jOld = joint->jAcc;
+
 	if (joint->bias < 0.0f)
 	{
 		joint->jAcc = cpfclamp(jOld + j, 0.0f, jMax);
@@ -89,6 +91,11 @@ applyImpulse(cpRotaryLimitJoint* joint, cpFloat dt)
 	// apply impulse
 	a->w -= j * a->i_inv;
 	b->w += j * b->i_inv;
+
+	cpFloat e = 0.50f;
+
+	//a->w -= e * wr * dt;
+	//b->w += e * wr * dt;
 }
 
 static cpFloat
@@ -119,6 +126,7 @@ cpRotaryLimitJointInit(cpRotaryLimitJoint* joint, cpBody* a, cpBody* b, cpFloat 
 	joint->max = max;
 
 	joint->jAcc = 0.0f;
+	joint->delta = 0.0f;
 
 	return joint;
 }

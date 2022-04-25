@@ -113,7 +113,7 @@ static union MSVC_EVIL_FLOAT_HACK INFINITY_HACK = {{0x00, 0x00, 0x80, 0x7F}};
 
 
 #define CP_PI ((cpFloat)3.14159265358979323846264338327950288)
-
+#define CP_TAU ((cpFloat)3.14159265358979323846264338327950288 * 2.00)
 
 /// Return the max of two cpFloats.
 static inline cpFloat cpfmax(cpFloat a, cpFloat b)

@@ -24,20 +24,25 @@
 static void
 preStep(cpGearJoint* joint, cpFloat dt)
 {
+	//if (joint->constraint.maxForce <= 0.00f) return;
+
 	cpBody* a = joint->constraint.a;
 	cpBody* b = joint->constraint.b;
 
 	// calculate moment of inertia coefficient.
 	joint->iSum = 1.0f / (a->i_inv * joint->ratio_inv + joint->ratio * b->i_inv);
+	joint->delta = cpangdiff(b->a * joint->ratio, a->a + joint->phase);
 
 	// calculate bias velocity
 	cpFloat maxBias = joint->constraint.maxBias;
-	joint->bias = cpfclamp(-bias_coef(joint->constraint.errorBias, dt) * cpangdiff(b->a * joint->ratio, a->a + joint->phase) / dt, -maxBias, maxBias);
+	joint->bias = cpfclamp(-bias_coef(joint->constraint.errorBias, dt) * joint->delta / dt, -maxBias, maxBias);
 }
 
 static void
 applyCachedImpulse(cpGearJoint* joint, cpFloat dt_coef)
 {
+	//if (joint->constraint.maxForce <= 0.00f) return;
+
 	cpBody* a = joint->constraint.a;
 	cpBody* b = joint->constraint.b;
 
@@ -49,6 +54,8 @@ applyCachedImpulse(cpGearJoint* joint, cpFloat dt_coef)
 static void
 applyImpulse(cpGearJoint* joint, cpFloat dt)
 {
+	//if (joint->constraint.maxForce <= 0.00f) return;
+
 	cpBody* a = joint->constraint.a;
 	cpBody* b = joint->constraint.b;
 
@@ -97,6 +104,7 @@ cpGearJointInit(cpGearJoint* joint, cpBody* a, cpBody* b, cpFloat phase, cpFloat
 	joint->ratio_inv = 1.0f / ratio;
 
 	joint->jAcc = 0.0f;
+	joint->delta = 0.0f;
 
 	return joint;
 }
