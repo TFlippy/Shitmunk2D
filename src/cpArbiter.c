@@ -333,8 +333,9 @@ cpArbiterInit(cpArbiter* arb, cpShape* a, cpShape* b)
 	arb->handlerA = NULL;
 	arb->handlerB = NULL;
 
-	arb->e = 0.0f;
-	arb->u = 0.0f;
+	arb->e = 0.00f;
+	arb->u = 0.00f;
+	arb->r = 1.00f;
 	arb->surface_vr = cpvzero;
 
 	arb->count = 0;
@@ -415,6 +416,7 @@ cpArbiterUpdate(cpArbiter* arb, struct cpCollisionInfo* info, cpSpace* space)
 
 	arb->e = a->e * b->e;
 	arb->u = a->u * b->u;
+	arb->r = cpfmin(a->r, b->r);
 
 	cpVect surface_vr = cpvsub(b->surfaceV, a->surfaceV);
 	arb->surface_vr = cpvsub(surface_vr, cpvmult(info->n, cpvdot(surface_vr, info->n)));
@@ -481,6 +483,7 @@ cpArbiterApplyCachedImpulse(cpArbiter* arb, cpFloat dt_coef)
 	cpBody* a = arb->body_a;
 	cpBody* b = arb->body_b;
 	cpVect n = arb->n;
+	cpFloat rigidity = arb->r;
 
 	cpFloat w_damp = 1.00f - (cpfclamp01((1.00f - arb->e) * arb->u) * 0.10f);
 	a->w *= w_damp;
@@ -489,7 +492,7 @@ cpArbiterApplyCachedImpulse(cpArbiter* arb, cpFloat dt_coef)
 	for (int i = 0; i < arb->count; i++)
 	{
 		struct cpContact* con = &arb->contacts[i];
-		cpVect j = cpvrotate(n, cpv(con->jnAcc, con->jtAcc));
+		cpVect j = cpvrotate(n, cpv(con->jnAcc * rigidity, con->jtAcc));
 		apply_impulses(a, b, con->r1, con->r2, cpvmult(j, dt_coef));
 	}
 }
@@ -505,6 +508,7 @@ cpArbiterApplyImpulse(cpArbiter* arb)
 	cpVect surface_vr = arb->surface_vr;
 	cpFloat friction = arb->u;
 	cpFloat elasticity = arb->e;
+	cpFloat rigidity = arb->r;
 
 	for (int i = 0; i < arb->count; i++)
 	{
@@ -523,11 +527,11 @@ cpArbiterApplyImpulse(cpArbiter* arb)
 
 		cpFloat jbn = (con->bias - vbn) * nMass;
 		cpFloat jbnOld = con->jBias;
-		con->jBias = cpfmax(jbnOld + jbn, 0.0f);
+		con->jBias = cpfmax(jbnOld + jbn, 0.0f) * rigidity;
 
 		cpFloat jn = -(con->bounce + vrn) * nMass;
 		cpFloat jnOld = con->jnAcc;
-		con->jnAcc = cpfmax(jnOld + jn, 0.0f);
+		con->jnAcc = cpfmax(jnOld + jn, 0.0f) * rigidity;
 
 		cpFloat jtMax = friction * con->jnAcc;
 		cpFloat jt = -vrt * con->tMass;

@@ -156,6 +156,7 @@ struct cpArbiter
 {
 	cpFloat e;
 	cpFloat u;
+
 	cpVect surface_vr;
 
 	cpDataPointer data;
@@ -171,6 +172,7 @@ struct cpArbiter
 
 	// Regular, wildcard A and wildcard B collision handlers.
 	cpCollisionHandler* handler, * handlerA, * handlerB;
+	cpFloat r;
 	cpBool swapped;
 	cpBool dirty;
 
@@ -225,6 +227,7 @@ struct cpShape
 
 	cpFloat e;
 	cpFloat u;
+	cpFloat r;
 	cpVect surfaceV;
 
 	cpDataPointer userData;
