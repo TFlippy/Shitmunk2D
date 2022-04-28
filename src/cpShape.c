@@ -28,6 +28,8 @@ CP_DeclareShapeGetter(struct, type, name){ \
 	return ((struct *)shape)->member; \
 }
 
+typedef struct cpBoxShape cpBoxShape;
+
 cpShape*
 cpShapeInit(cpShape* shape, const cpShapeClass* klass, cpBody* body, struct cpShapeMassInfo massInfo)
 {
@@ -654,9 +656,6 @@ cpSegmentShapeSetRadius(cpShape* shape, cpFloat radius)
 	shape->massInfo = cpSegmentShapeMassInfo(shape->massInfo.m, seg->a, seg->b, seg->r);
 	if (mass > 0.0f) cpBodyAccumulateMassFromShapes(shape->body);
 }
-
-
-
 
 static cpBB
 cpBoxShapeCacheData(cpBoxShape* box, cpTransform transform)
