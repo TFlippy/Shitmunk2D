@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.7)
 
 project(chipmunk)
-
+SET (CMAKE_C_COMPILER             "/usr/bin/clang")
 # to change the prefix, run cmake with the parameter:
 #   -D CMAKE_INSTALL_PREFIX=/my/prefix
 
@@ -30,11 +30,11 @@ if(ANDROID)
   option(BUILD_STATIC "Build as static library" ON)
   option(INSTALL_STATIC "Install the static library" OFF)
 else()
-  option(BUILD_DEMOS "Build the demo applications" ON)
+  option(BUILD_DEMOS "Build the demo applications" OFF)
   option(INSTALL_DEMOS "Install the demo applications" OFF)
   option(BUILD_SHARED "Build and install the shared library" ON)
   option(BUILD_STATIC "Build as static library" ON)
-  option(INSTALL_STATIC "Install the static library" ON)
+  option(INSTALL_STATIC "Install the static library" OFF)
 endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
