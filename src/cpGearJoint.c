@@ -36,6 +36,9 @@ preStep(cpGearJoint* joint, cpFloat dt)
 	// calculate bias velocity
 	cpFloat maxBias = joint->constraint.maxBias;
 	joint->bias = cpfclamp(-bias_coef(joint->constraint.errorBias, dt) * joint->delta / dt, -maxBias, maxBias);
+
+	// If the bias is 0, the joint is not at a limit. Reset the impulse.
+	if (!joint->bias) joint->jAcc = 0.0f;
 }
 
 static void
@@ -54,6 +57,7 @@ applyCachedImpulse(cpGearJoint* joint, cpFloat dt_coef)
 static void
 applyImpulse(cpGearJoint* joint, cpFloat dt)
 {
+	if (!joint->bias) return; // early exit
 	//if (joint->constraint.maxForce <= 0.00f) return;
 
 	cpBody* a = joint->constraint.a;

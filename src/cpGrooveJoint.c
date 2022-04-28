@@ -32,7 +32,7 @@ preStep(cpGrooveJoint* joint, cpFloat dt)
 	cpVect tb = cpTransformPoint(a->transform, joint->grv_b);
 
 	// calculate axis
-	cpVect n = cpTransformVect(a->transform, joint->grv_n);
+	cpVect n = cpTransformVect(a->transform_unscaled, joint->grv_n);
 	cpFloat d = cpvdot(ta, n);
 
 	joint->grv_tn = n;
