@@ -125,9 +125,13 @@ static void FreeWrap(void* ptr, void* unused)
 
 //MARK: Memory Management Functions
 
+#define test sizeof(cpSpace)
+
 cpSpace*
 cpSpaceAlloc(void)
 {
+    printf("%ld\n", sizeof(cpSpace));
+//#pragma message ( )
 	return (cpSpace*)cpcalloc(1, sizeof(cpSpace));
 }
 

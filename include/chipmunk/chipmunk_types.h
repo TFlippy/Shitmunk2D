@@ -284,3 +284,5 @@ typedef struct cpMat2x2
 #endif
 
 typedef unsigned long long cpEntity;
+typedef unsigned long long cpLong;
+typedef signed int cpInt;

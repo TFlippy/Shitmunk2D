@@ -477,7 +477,7 @@ typedef void (*cpSpaceArbiterApplyImpulseFunc)(cpArbiter* arb);
 
 struct cpSpace
 {
-	int iterations;
+	cpInt iterations;
 
 	cpVect gravity;
 	cpFloat damping;
@@ -512,7 +512,7 @@ struct cpSpace
 	cpArray* pooledArbiters;
 
 	cpArray* allocatedBuffers;
-	long locked;
+	cpLong locked;
 
 	cpBool usesWildcards;
 	cpHashSet* collisionHandlers;
