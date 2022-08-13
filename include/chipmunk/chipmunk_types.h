@@ -98,7 +98,7 @@ union MSVC_EVIL_FLOAT_HACK
 	unsigned __int8 Bytes[4];
 	float Value;
 };
-static union MSVC_EVIL_FLOAT_HACK INFINITY_HACK = {{0x00, 0x00, 0x80, 0x7F}};
+static union MSVC_EVIL_FLOAT_HACK INFINITY_HACK = { {0x00, 0x00, 0x80, 0x7F} };
 #define INFINITY (INFINITY_HACK.Value)
 #endif
 
@@ -281,8 +281,16 @@ typedef struct cpMat2x2
 	cpFloat a, b, c, d;
 } cpMat2x2;
 
-#endif
-
 typedef unsigned long long cpEntity;
 typedef unsigned long long cpLong;
 typedef signed int cpInt;
+
+typedef struct ecs_ref_t
+{
+	cpEntity entity;
+	cpEntity id;
+	void* tr;
+	void* record;
+} ecs_ref_t;
+
+#endif

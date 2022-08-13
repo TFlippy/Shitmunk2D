@@ -46,10 +46,15 @@ struct cpImpact
 	int count;
 	cpTimestamp stamp;
 
-	uint8_t dirty;
 	uint8_t material_type_a;
 	uint8_t material_type_b;
-	uint8_t unused;
+	uint8_t body_type_a;
+	uint8_t body_type_b;
+
+	uint8_t unused_00;
+	uint8_t unused_01;
+	uint8_t unused_02;
+	uint8_t dirty;
 };
 
 struct cpBody
@@ -92,6 +97,7 @@ struct cpBody
 	cpFloat w_bias;
 	cpFloat gravity;
 	cpFloat max_velocity;
+	cpFloat buoyancy;
 
 	cpBodyType type;
 
@@ -104,6 +110,8 @@ struct cpBody
 	cpTransform transform_unscaled;
 
 	cpImpact impact;
+
+	ecs_ref_t ecs_ref;
 };
 
 enum cpArbiterState

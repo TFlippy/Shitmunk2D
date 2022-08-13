@@ -130,7 +130,7 @@ static void FreeWrap(void* ptr, void* unused)
 cpSpace*
 cpSpaceAlloc(void)
 {
-    printf("%ld\n", sizeof(cpSpace));
+    //printf("%ld\n", sizeof(cpSpace));
 //#pragma message ( )
 	return (cpSpace*)cpcalloc(1, sizeof(cpSpace));
 }

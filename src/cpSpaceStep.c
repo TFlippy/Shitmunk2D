@@ -559,6 +559,9 @@ cpSpaceStep(cpSpace* space, cpFloat dt)
 						{
 							imp->material_type_a = arb->a->material_type;
 							imp->material_type_b = arb->b->material_type;
+
+							imp->body_type_a = arb->body_a->type;
+							imp->body_type_b = arb->body_b->type;
 						}
 
 						imp->bounce += bounce;
@@ -571,7 +574,7 @@ cpSpaceStep(cpSpace* space, cpFloat dt)
 					{
 						cpImpact* imp = &arb->body_b->impact;
 						imp->p = cpvadd(imp->p, pos);
-						imp->n = cpvadd(imp->n, n);
+						imp->n = cpvadd(imp->n, cpvneg(n));
 						imp->bounce_rigid += bounce_rigid;
 						imp->count += count;
 
@@ -585,6 +588,9 @@ cpSpaceStep(cpSpace* space, cpFloat dt)
 						{
 							imp->material_type_a = arb->b->material_type;
 							imp->material_type_b = arb->a->material_type;
+
+							imp->body_type_a = arb->body_b->type;
+							imp->body_type_b = arb->body_a->type;
 						}
 
 						imp->bounce += bounce;

@@ -59,6 +59,7 @@ cpBodyInit(cpBody* body, cpFloat mass, cpFloat moment)
 	body->max_velocity = 50.00f;
 
 	body->gravity = 1.00f;
+	body->buoyancy = 0.50f;
 
 	body->owner_entity = NULL;
 	body->parent_entity = NULL;
@@ -463,6 +464,8 @@ SetTransform(cpBody* body, cpVect p, cpFloat a, cpVect s)
 static inline cpFloat
 SetAngle(cpBody* body, cpFloat a)
 {
+	a = cpfmod(a, CP_TAU);
+
 	body->a = a;
 	cpAssertSaneBody(body);
 
@@ -489,7 +492,7 @@ void
 cpBodySetTransform(cpBody* body, cpVect position, cpFloat angle, cpVect scale)
 {
 	cpVect p = body->p = cpvadd(cpTransformVect(body->transform, body->cog), position);
-	cpFloat a = body->a = angle;
+	cpFloat a = body->a = cpfmod(angle, CP_TAU);
 	cpVect s = body->s = scale;
 
 	SetTransform(body, p, a, s);
