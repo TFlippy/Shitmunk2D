@@ -129,7 +129,7 @@ typedef void (*cpSpatialIndexReindexQueryImpl)(cpSpatialIndex *index, cpSpatialI
 
 typedef void (*cpSpatialIndexQueryImpl)(cpSpatialIndex* index, void* obj, cpBB bb, cpSpatialIndexQueryFunc func, void* data);
 typedef void (*cpSpatialIndexBBQueryImpl)(cpSpatialIndex *index, void *obj, cpBB bb, cpSpatialIndexBBQueryFunc func, void *data);
-typedef void (*cpSpatialIndexSegmentQueryImpl)(cpSpatialIndex *index, void *obj, cpVect a, cpVect b, cpFloat t_exit, cpSpatialIndexSegmentQueryFunc func, void *data);
+typedef void (*cpSpatialIndexSegmentQueryImpl)(cpSpatialIndex *index, void *obj, cpVect a, cpVect b, cpFloat r, cpFloat t_exit, cpSpatialIndexSegmentQueryFunc func, void *data);
 
 struct cpSpatialIndexClass {
 	cpSpatialIndexDestroyImpl destroy;
@@ -213,9 +213,9 @@ static inline void cpSpatialIndexQuery(cpSpatialIndex *index, void *obj, cpBB bb
 }
 
 /// Perform a segment query against the spatial index, calling @c func for each potential match.
-static inline void cpSpatialIndexSegmentQuery(cpSpatialIndex *index, void *obj, cpVect a, cpVect b, cpFloat t_exit, cpSpatialIndexSegmentQueryFunc func, void *data)
+static inline void cpSpatialIndexSegmentQuery(cpSpatialIndex *index, void *obj, cpVect a, cpVect b, cpFloat r, cpFloat t_exit, cpSpatialIndexSegmentQueryFunc func, void *data)
 {
-	index->klass->segmentQuery(index, obj, a, b, t_exit, func, data);
+	index->klass->segmentQuery(index, obj, a, b, r, t_exit, func, data);
 }
 
 static inline void cpSpatialIndexBBQuery(cpSpatialIndex* index, void* obj, cpBB bb, cpSpatialIndexBBQueryFunc func, void* data)

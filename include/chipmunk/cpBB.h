@@ -112,7 +112,7 @@ static inline cpFloat cpBBMergedArea(cpBB a, cpBB b)
 }
 
 /// Returns the fraction along the segment query the cpBB is hit. Returns INFINITY if it doesn't hit.
-static inline cpFloat cpBBSegmentQuery(cpBB bb, cpVect a, cpVect b)
+static inline cpFloat cpBBSegmentQuery(cpBB bb, cpVect a, cpVect b, cpFloat r)
 {
 	cpVect delta = cpvsub(b, a);
 	cpFloat tmin = -INFINITY, tmax = INFINITY;
@@ -120,8 +120,8 @@ static inline cpFloat cpBBSegmentQuery(cpBB bb, cpVect a, cpVect b)
 	if(delta.x == 0.0f){
 		if(a.x < bb.l || bb.r < a.x) return INFINITY;
 	} else {
-		cpFloat t1 = (bb.l - a.x)/delta.x;
-		cpFloat t2 = (bb.r - a.x)/delta.x;
+		cpFloat t1 = (bb.l - r - a.x)/delta.x;
+		cpFloat t2 = (bb.r + r - a.x)/delta.x;
 		tmin = cpfmax(tmin, cpfmin(t1, t2));
 		tmax = cpfmin(tmax, cpfmax(t1, t2));
 	}
@@ -129,8 +129,8 @@ static inline cpFloat cpBBSegmentQuery(cpBB bb, cpVect a, cpVect b)
 	if(delta.y == 0.0f){
 		if(a.y < bb.b || bb.t < a.y) return INFINITY;
 	} else {
-		cpFloat t1 = (bb.b - a.y)/delta.y;
-		cpFloat t2 = (bb.t - a.y)/delta.y;
+		cpFloat t1 = (bb.b - r - a.y)/delta.y;
+		cpFloat t2 = (bb.t + r - a.y)/delta.y;
 		tmin = cpfmax(tmin, cpfmin(t1, t2));
 		tmax = cpfmin(tmax, cpfmax(t1, t2));
 	}
@@ -143,9 +143,9 @@ static inline cpFloat cpBBSegmentQuery(cpBB bb, cpVect a, cpVect b)
 }
 
 /// Return true if the bounding box intersects the line segment with ends @c a and @c b.
-static inline cpBool cpBBIntersectsSegment(cpBB bb, cpVect a, cpVect b)
+static inline cpBool cpBBIntersectsSegment(cpBB bb, cpVect a, cpVect b, cpFloat r)
 {
-	return (cpBBSegmentQuery(bb, a, b) != INFINITY);
+	return (cpBBSegmentQuery(bb, a, b, r) != INFINITY);
 }
 
 /// Clamp a vector to a bounding box.

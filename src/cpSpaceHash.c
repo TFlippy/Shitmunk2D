@@ -529,7 +529,7 @@ restart:
 
 // modified from http://playtechs.blogspot.com/2007/03/raytracing-on-grid.html
 static void
-cpSpaceHashSegmentQuery(cpSpaceHash* hash, void* obj, cpVect a, cpVect b, cpFloat t_exit, cpSpatialIndexSegmentQueryFunc func, void* data)
+cpSpaceHashSegmentQuery(cpSpaceHash* hash, void* obj, cpVect a, cpVect b, cpFloat r, cpFloat t_exit, cpSpatialIndexSegmentQueryFunc func, void* data)
 {
 	a = cpvmult(a, 1.0f / hash->celldim);
 	b = cpvmult(b, 1.0f / hash->celldim);

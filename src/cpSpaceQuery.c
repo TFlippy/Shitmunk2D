@@ -135,8 +135,8 @@ cpSpaceSegmentQuery(cpSpace* space, cpVect start, cpVect end, cpFloat radius, cp
 
 	//cpSpaceLock(space);
 	//{
-	cpSpatialIndexSegmentQuery(space->staticShapes, &context, start, end, 1.0f, (cpSpatialIndexSegmentQueryFunc)SegmentQuery, data);
-	cpSpatialIndexSegmentQuery(space->dynamicShapes, &context, start, end, 1.0f, (cpSpatialIndexSegmentQueryFunc)SegmentQuery, data);
+	cpSpatialIndexSegmentQuery(space->staticShapes, &context, start, end, radius, 1.0f, (cpSpatialIndexSegmentQueryFunc)SegmentQuery, data);
+	cpSpatialIndexSegmentQuery(space->dynamicShapes, &context, start, end, radius, 1.0f, (cpSpatialIndexSegmentQueryFunc)SegmentQuery, data);
 	//} 
 	//cpSpaceUnlock(space, cpTrue);
 }
@@ -176,8 +176,8 @@ cpSpaceSegmentQueryFirst(cpSpace* space, cpVect start, cpVect end, cpFloat radiu
 		NULL
 	};
 
-	cpSpatialIndexSegmentQuery(space->staticShapes, &context, start, end, 1.0f, (cpSpatialIndexSegmentQueryFunc)SegmentQueryFirst, out);
-	cpSpatialIndexSegmentQuery(space->dynamicShapes, &context, start, end, out->alpha, (cpSpatialIndexSegmentQueryFunc)SegmentQueryFirst, out);
+	cpSpatialIndexSegmentQuery(space->staticShapes, &context, start, end, radius, 1.0f, (cpSpatialIndexSegmentQueryFunc)SegmentQueryFirst, out);
+	cpSpatialIndexSegmentQuery(space->dynamicShapes, &context, start, end, radius, out->alpha, (cpSpatialIndexSegmentQueryFunc)SegmentQueryFirst, out);
 
 	return (cpShape*)out->shape;
 }
@@ -354,8 +354,8 @@ cpSpaceSegmentQuery2(cpSpace* space, cpVect start, cpVect end, cpFloat radius, c
 		max_count
 	};
 
-	if ((flags & QUERY_DYNAMIC) && meta.count < meta.max_count) cpSpatialIndexSegmentQuery(space->dynamicShapes, &context, start, end, 1.0f, (cpSpatialIndexSegmentQueryFunc)SegmentQuery2, &meta);
-	if ((flags & QUERY_STATIC) && meta.count < meta.max_count) cpSpatialIndexSegmentQuery(space->staticShapes, &context, start, end, 1.0f, (cpSpatialIndexSegmentQueryFunc)SegmentQuery2, &meta);
+	if ((flags & QUERY_DYNAMIC) && meta.count < meta.max_count) cpSpatialIndexSegmentQuery(space->dynamicShapes, &context, start, end, radius, 1.0f, (cpSpatialIndexSegmentQueryFunc)SegmentQuery2, &meta);
+	if ((flags & QUERY_STATIC) && meta.count < meta.max_count) cpSpatialIndexSegmentQuery(space->staticShapes, &context, start, end, radius, 1.0f, (cpSpatialIndexSegmentQueryFunc)SegmentQuery2, &meta);
 
 	return meta.count;
 }

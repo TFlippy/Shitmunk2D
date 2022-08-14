@@ -194,7 +194,7 @@ cpSweep1DQuery(cpSweep1D* sweep, void* obj, cpBB bb, cpSpatialIndexQueryFunc fun
 }
 
 static void
-cpSweep1DSegmentQuery(cpSweep1D* sweep, void* obj, cpVect a, cpVect b, cpFloat t_exit, cpSpatialIndexSegmentQueryFunc func, void* data)
+cpSweep1DSegmentQuery(cpSweep1D* sweep, void* obj, cpVect a, cpVect b, cpFloat r, cpFloat t_exit, cpSpatialIndexSegmentQueryFunc func, void* data)
 {
 	cpBB bb = cpBBExpand(cpBBNew(a.x, a.y, a.x, a.y), b);
 	Bounds bounds = BBToBounds(sweep, bb);

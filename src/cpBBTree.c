@@ -435,7 +435,7 @@ SubtreeBBQuery(Node* subtree, void* obj, cpBB bb, cpSpatialIndexBBQueryFunc func
 }
 
 static cpFloat
-SubtreeSegmentQuery(Node* subtree, void* obj, cpVect a, cpVect b, cpFloat t_exit, cpSpatialIndexSegmentQueryFunc func, void* data)
+SubtreeSegmentQuery(Node* subtree, void* obj, cpVect a, cpVect b, cpFloat r, cpFloat t_exit, cpSpatialIndexSegmentQueryFunc func, void* data)
 {
 	if (NodeIsLeaf(subtree))
 	{
@@ -443,18 +443,18 @@ SubtreeSegmentQuery(Node* subtree, void* obj, cpVect a, cpVect b, cpFloat t_exit
 	}
 	else
 	{
-		cpFloat t_a = cpBBSegmentQuery(subtree->A->bb, a, b);
-		cpFloat t_b = cpBBSegmentQuery(subtree->B->bb, a, b);
+		cpFloat t_a = cpBBSegmentQuery(subtree->A->bb, a, b, r);
+		cpFloat t_b = cpBBSegmentQuery(subtree->B->bb, a, b, r);
 
 		if (t_a < t_b)
 		{
-			if (t_a < t_exit) t_exit = cpfmin(t_exit, SubtreeSegmentQuery(subtree->A, obj, a, b, t_exit, func, data));
-			if (t_b < t_exit) t_exit = cpfmin(t_exit, SubtreeSegmentQuery(subtree->B, obj, a, b, t_exit, func, data));
+			if (t_a < t_exit) t_exit = cpfmin(t_exit, SubtreeSegmentQuery(subtree->A, obj, a, b, r, t_exit, func, data));
+			if (t_b < t_exit) t_exit = cpfmin(t_exit, SubtreeSegmentQuery(subtree->B, obj, a, b, r, t_exit, func, data));
 		}
 		else
 		{
-			if (t_b < t_exit) t_exit = cpfmin(t_exit, SubtreeSegmentQuery(subtree->B, obj, a, b, t_exit, func, data));
-			if (t_a < t_exit) t_exit = cpfmin(t_exit, SubtreeSegmentQuery(subtree->A, obj, a, b, t_exit, func, data));
+			if (t_b < t_exit) t_exit = cpfmin(t_exit, SubtreeSegmentQuery(subtree->B, obj, a, b, r, t_exit, func, data));
+			if (t_a < t_exit) t_exit = cpfmin(t_exit, SubtreeSegmentQuery(subtree->A, obj, a, b, r, t_exit, func, data));
 		}
 
 		return t_exit;
@@ -793,10 +793,10 @@ cpBBTreeReindexObject(cpBBTree* tree, void* obj, cpHashValue hashid)
 //MARK: Query
 
 static void
-cpBBTreeSegmentQuery(cpBBTree* tree, void* obj, cpVect a, cpVect b, cpFloat t_exit, cpSpatialIndexSegmentQueryFunc func, void* data)
+cpBBTreeSegmentQuery(cpBBTree* tree, void* obj, cpVect a, cpVect b, cpFloat r, cpFloat t_exit, cpSpatialIndexSegmentQueryFunc func, void* data)
 {
 	Node* root = tree->root;
-	if (root) SubtreeSegmentQuery(root, obj, a, b, t_exit, func, data);
+	if (root) SubtreeSegmentQuery(root, obj, a, b, r, t_exit, func, data);
 }
 
 static void
