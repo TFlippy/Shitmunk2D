@@ -36,6 +36,8 @@ cpSpaceDebugDrawShape(cpShape* shape, cpSpaceDebugDrawOptions* options)
 	//cpSpaceDebugColor pos_color = { 0, 1, 0, 1 };
 	//cpSpaceDebugColor cog_color = { 0, 0, 1, 1 };
 	//cpSpaceDebugColor cog_color2 = { 0, 0, 1, 0.50f };
+	// 
+	cpSpaceDebugColor n_color = { 1, 1, 0, 0.50f };
 
 	//options->drawCircle(body->p, 0.00f, 0.25f, pos_color, pos_color, data);
 	//options->drawCircle(cpv(body->transform.tx, body->transform.ty), 0.00f, 0.25f, tra_color, tra_color, data);
@@ -54,6 +56,7 @@ cpSpaceDebugDrawShape(cpShape* shape, cpSpaceDebugDrawOptions* options)
 	{
 		cpSegmentShape* seg = (cpSegmentShape*)shape;
 		options->drawFatSegment(seg->ta, seg->tb, seg->r, outline_color, fill_color, data);
+		//options->drawSegment(cpvmult(cpvadd(seg->ta, seg->tb), 0.50f), cpvadd(cpvmult(cpvadd(seg->ta, seg->tb), 0.50f), seg->tn), n_color, data);
 		break;
 	}
 	case CP_POLY_SHAPE:

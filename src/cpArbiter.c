@@ -416,7 +416,11 @@ cpArbiterUpdate(cpArbiter* arb, struct cpCollisionInfo* info, cpSpace* space)
 
 	arb->e = a->e * b->e;
 	arb->u = a->u * b->u;
-	arb->r = cpfmin(a->r, b->r);
+
+	cpFloat rg_a = b->body->type == CP_BODY_TYPE_STATIC ? a->rg_s : a->rg_d;
+	cpFloat rg_b = a->body->type == CP_BODY_TYPE_STATIC ? b->rg_s : b->rg_d;
+
+	arb->r = cpfmin(rg_a, rg_b);
 
 	cpVect surface_vr = cpvsub(b->surfaceV, a->surfaceV);
 	arb->surface_vr = cpvsub(surface_vr, cpvmult(info->n, cpvdot(surface_vr, info->n)));

@@ -235,7 +235,8 @@ struct cpShape
 
 	cpFloat e;
 	cpFloat u;
-	cpFloat r;
+	cpFloat rg_d;
+	cpFloat rg_s;
 	cpVect surfaceV;
 
 	cpDataPointer userData;

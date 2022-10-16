@@ -89,6 +89,7 @@ typedef float cpFloat;
 #define cpffloor floorf
 #define cpfceil ceilf
 #define CPFLOAT_MIN FLT_MIN
+#define CPFLOAT_EPSILON FLT_EPSILON
 #endif
 
 #ifndef INFINITY

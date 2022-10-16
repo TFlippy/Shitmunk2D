@@ -42,7 +42,8 @@ cpShapeInit(cpShape* shape, const cpShapeClass* klass, cpBody* body, struct cpSh
 
 	shape->e = 0.0f;
 	shape->u = 0.0f;
-	shape->r = 1.0f;
+	shape->rg_d = 1.0f;
+	shape->rg_s = 1.0f;
 	shape->surfaceV = cpvzero;
 
 	shape->type = 0;

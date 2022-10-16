@@ -376,7 +376,8 @@ ShapeQuery2(struct ShapeQueryContext2* context, cpShape* shape, cpCollisionID id
 		cpContactPointSet set = cpShapesCollide(shape, context->shape);
 		if (set.count)
 		{
-			meta->results[meta->count] = (cpShapeQueryInfo) {
+			meta->results[meta->count] = cpShapeQueryInfo
+			{
 				shape
 			};
 			meta->count++;
@@ -436,7 +437,10 @@ BBQuery2(struct BBQueryContext* context, cpShape* shape, BBQueryMeta* meta)
 	//if (cpBBIntersects(context->bb, shape->bb) && !cpShapeFilterReject(shape->filter, context->filter))
 	if (meta->count < meta->max_count && cpBBIntersects(context->bb, shape->bb) && !cpShapeFilterReject(shape->filter, context->filter))
 	{
-		meta->results[meta->count++] = (cpBBQueryInfo) { shape };
+		meta->results[meta->count++] = cpBBQueryInfo 
+		{ 
+			shape 
+		};
 	}
 
 	return meta->count < meta->max_count;

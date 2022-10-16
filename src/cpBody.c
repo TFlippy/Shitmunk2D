@@ -764,7 +764,8 @@ cpBodyEachArbiter(cpBody* body, cpBodyArbiterIteratorFunc func, void* data)
 		{
 			arb->swapped = (body == arb->body_b);
 			func(body, arb, data);
-		} arb->swapped = swapped;
+		} 
+		arb->swapped = swapped;
 
 		arb = next;
 	}
