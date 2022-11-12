@@ -164,6 +164,7 @@ CP_EXPORT cpShape* cpSpaceAddShape(cpSpace* space, cpShape* shape);
 CP_EXPORT cpBody* cpSpaceAddBody(cpSpace* space, cpBody* body);
 /// Add a constraint to the simulation.
 CP_EXPORT cpConstraint* cpSpaceAddConstraint(cpSpace* space, cpConstraint* constraint);
+CP_EXPORT cpConstraint* cpSpaceAddConstraint2(cpSpace* space, cpConstraint* constraint, cpBody* a, cpBody* b);
 
 /// Remove a collision shape from the simulation.
 CP_EXPORT void cpSpaceRemoveShape(cpSpace* space, cpShape* shape);
@@ -171,6 +172,7 @@ CP_EXPORT void cpSpaceRemoveShape(cpSpace* space, cpShape* shape);
 CP_EXPORT void cpSpaceRemoveBody(cpSpace* space, cpBody* body);
 /// Remove a constraint from the simulation.
 CP_EXPORT void cpSpaceRemoveConstraint(cpSpace* space, cpConstraint* constraint);
+CP_EXPORT void cpSpaceRemoveConstraint2(cpSpace* space, cpConstraint* constraint, cpBody* a, cpBody* b);
 
 /// Test if a collision shape has been added to the space.
 CP_EXPORT cpBool cpSpaceContainsShape(cpSpace* space, cpShape* shape);

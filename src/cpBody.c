@@ -423,7 +423,11 @@ cpBodyRemoveShape(cpBody* body, cpShape* shape)
 static cpConstraint*
 filterConstraints(cpConstraint* node, cpBody* body, cpConstraint* filter)
 {
-	if (node == filter)
+	if (node == NULL)
+	{
+		return NULL;
+	}
+	else if (node == filter)
 	{
 		return cpConstraintNext(node, body);
 	}

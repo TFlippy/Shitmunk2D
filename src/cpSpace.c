@@ -509,6 +509,46 @@ cpSpaceAddConstraint(cpSpace* space, cpConstraint* constraint)
 	return constraint;
 }
 
+cpConstraint*
+cpSpaceAddConstraint2(cpSpace* space, cpConstraint* constraint, cpBody* a, cpBody* b)
+{
+	cpAssertHard(constraint->space != space, "You have already added this constraint to this space. You must not add it a second time.");
+	cpAssertHard(!constraint->space, "You have already added this constraint to another space. You cannot add it to a second.");
+	cpAssertSpaceUnlocked(space);
+
+	//cpBody* a = constraint->a, * b = constraint->b;
+	cpAssertHard(a != NULL && b != NULL, "Constraint is attached to a NULL body.");
+	//cpAssertHard(a->space == space && b->space == space, "The constraint's bodies must be added to the space before the constraint.");
+
+	if (a != b && a != NULL && b != NULL)
+	{
+		if (constraint->a != NULL || constraint->b != NULL)
+		{
+			cpSpaceRemoveConstraint2(space, constraint, constraint->a, constraint->b);
+		}
+
+		constraint->a = a;
+		constraint->b = b;
+
+		cpBodyActivate(a);
+		cpBodyActivate(b);
+
+		cpArrayPush(space->constraints, constraint);
+
+		// Push onto the heads of the bodies' constraint lists
+
+		constraint->next_a = a->constraintList; 
+		a->constraintList = constraint;
+
+		constraint->next_b = b->constraintList; 
+		b->constraintList = constraint;
+
+		constraint->space = space;
+	}
+
+	return constraint;
+}
+
 struct arbiterFilterContext
 {
 	cpSpace* space;
@@ -622,6 +662,29 @@ cpSpaceRemoveConstraint(cpSpace* space, cpConstraint* constraint)
 	if (constraint->b != NULL && constraint->b != constraint->a) cpBodyRemoveConstraint(constraint->b, constraint);
 
 	constraint->space = NULL;
+	constraint->b = NULL;
+}
+
+void
+cpSpaceRemoveConstraint2(cpSpace* space, cpConstraint* constraint, cpBody* a, cpBody* b)
+{
+	//cpAssertHard(cpSpaceContainsConstraint(space, constraint), "Cannot remove a constraint that was not added to the space. (Removed twice maybe?)");
+	//cpAssertSpaceUnlocked(space);
+
+	if (cpSpaceContainsConstraint(space, constraint))
+	{
+		if (a != NULL) cpBodyActivate(a);
+		if (b != NULL && b != a) cpBodyActivate(b);
+
+		cpArrayDeleteObj(space->constraints, constraint);
+	}
+
+	if (a != NULL) cpBodyRemoveConstraint(a, constraint);
+	if (b != NULL && b != a) cpBodyRemoveConstraint(b, constraint);
+
+	constraint->space = NULL;
+
+	constraint->a = NULL;
 	constraint->b = NULL;
 }
 
