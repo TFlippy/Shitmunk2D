@@ -460,7 +460,7 @@ cpSegmentShapePointQuery(cpSegmentShape* seg, cpVect p, cpPointQueryInfo* info)
 	cpVect delta = cpvsub(p, closest);
 	cpFloat d = cpvlength(delta);
 	cpFloat r = seg->r;
-	cpVect g = cpvmult(delta, 1.0f / d);
+	cpVect g = cpvmult(delta, 1.0f / cpfmax(d, CPFLOAT_MIN));
 
 	info->shape = (cpShape*)seg;
 	info->point = (d ? cpvadd(closest, cpvmult(g, r)) : closest);

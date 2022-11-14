@@ -187,7 +187,7 @@ static inline cpVect
 cpClosestPointOnSegment(const cpVect p, const cpVect a, const cpVect b)
 {
 	cpVect delta = cpvsub(a, b);
-	cpFloat t = cpfclamp01(cpvdot(delta, cpvsub(p, b))/cpvlengthsq(delta));
+	cpFloat t = cpfclamp01(cpvdot(delta, cpvsub(p, b))/cpfmax(cpvlengthsq(delta), CPFLOAT_MIN));
 	return cpvadd(b, cpvmult(delta, t));
 }
 

@@ -88,7 +88,7 @@ cpPolyShapePointQuery(cpPolyShape* poly, cpVect p, cpPointQueryInfo* info)
 	for (int i = 0; i < count; i++)
 	{
 		cpVect v1 = planes[i].v0;
-		outside = outside || (cpvdot(planes[i].n, cpvsub(p, v1)) > 0.0f);
+		outside |= (cpvdot(planes[i].n, cpvsub(p, v1)) > 0.0f);
 
 		cpVect closest = cpClosestPointOnSegment(p, v0, v1);
 
@@ -104,7 +104,7 @@ cpPolyShapePointQuery(cpPolyShape* poly, cpVect p, cpPointQueryInfo* info)
 	}
 
 	cpFloat dist = (outside ? minDist : -minDist);
-	cpVect g = cpvmult(cpvsub(p, closestPoint), 1.0f / dist);
+	cpVect g = cpvmult(cpvsub(p, closestPoint), 1.0f / cpfmax(dist, CPFLOAT_MIN));
 
 	info->shape = (cpShape*)poly;
 	info->point = cpvadd(closestPoint, cpvmult(g, r));
