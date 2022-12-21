@@ -104,7 +104,7 @@ cpPolyShapePointQuery(cpPolyShape* poly, cpVect p, cpPointQueryInfo* info)
 	}
 
 	cpFloat dist = (outside ? minDist : -minDist);
-	cpVect g = cpvmult(cpvsub(p, closestPoint), 1.0f / cpfmax(dist, CPFLOAT_MIN));
+	cpVect g = cpvmult(cpvsub(p, closestPoint), 1.0f / (dist + CPFLOAT_MIN));
 
 	info->shape = (cpShape*)poly;
 	info->point = cpvadd(closestPoint, cpvmult(g, r));
